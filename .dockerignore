@@ -1,0 +1,35 @@
+# Secrets
+.env
+.env.*
+*.key
+*.pem
+secrets/
+
+# Development
+.git/
+.gitignore
+node_modules/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Test files (optional)
+*_test.go
+test/
+
+# Build artifacts
+*.exe
+*.dll
+tmp/
+dist/
+
+# Documentation (optional)
+README.md
+docs/
