@@ -4,27 +4,41 @@ import (
 	"github.com/joho/godotenv"
 	// "github.com/mattn/go-sqlite3"
 	"github.com/gin-gonic/gin"
-	"fmt"
+	// "fmt"
 	"net/http"
 	"os"
-	// "log"
+	"log"
 )
 
 func main() {
 	
 	godotenv.Load()
     port := os.Getenv("PORT")
+	
+	log.Println("Application starting...")
+	log.Printf("Environment: %s", os.Getenv("ENV"))
     if port == "" {
-		fmt.Println("failed to scan port from .env. Defaulting to 8080")
+		log.Println("failed to scan port from .env. Defaulting to 8080")
         port = "8080"
     }
 	router := gin.Default()
+	
+	// Setting up default routes
+	router.Static("/assets", "./frontend/dist/assets")
+	
+	router.NoRoute(func(c *gin.Context) {
+		c.File("./frontend/dist/index.html")
+	})
+
+	// Setting up all the routes
 	router.GET("/api/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",
 		})
 	})
-	fmt.Println("Starting server on port", port)
+
+	// Starting the server
+	log.Println("Starting server on port", port)
 	router.Run()
 
 	/* // Serve static files from Svelte build
