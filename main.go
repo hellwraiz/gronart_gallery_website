@@ -2,10 +2,12 @@ package main
 
 import (
 	"github.com/joho/godotenv"
+	// "github.com/mattn/go-sqlite3"
+	"github.com/gin-gonic/gin"
 	"fmt"
 	"net/http"
 	"os"
-	"log"
+	// "log"
 )
 
 func main() {
@@ -16,8 +18,16 @@ func main() {
 		fmt.Println("failed to scan port from .env. Defaulting to 8080")
         port = "8080"
     }
+	router := gin.Default()
+	router.GET("/api/ping", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "pong",
+		})
+	})
+	fmt.Println("Starting server on port", port)
+	router.Run()
 
-	// Serve static files from Svelte build
+	/* // Serve static files from Svelte build
 	http.Handle("/", http.FileServer(http.Dir("./frontend/dist")))
 
 	// API routes
@@ -27,5 +37,5 @@ func main() {
 	})
 
 	fmt.Println("Starting server on port", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Fatal(http.ListenAndServe(":"+port, nil)) */
 }
