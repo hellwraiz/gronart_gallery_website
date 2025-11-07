@@ -69,3 +69,27 @@ func InitDB() (*sql.DB, error) {
 	// alles goed!
     return db, nil
 }
+
+func CreatePainting(db *sql.DB, p *Painting) error {
+	query := `INSERT INTO paintings (uuid, name, img_url, size, technique) VALUES (?, ?, ?, ?, ?)`
+
+    if _, err := db.Exec(query, p.UUID, p.Name, p.ImgURL, p.Size, p.Technique); err != nil {
+        return err
+    } else {
+		return nil
+	}
+}
+
+func GetPaintingByUUID(db *sql.DB, uuid string) (*Painting, error) {
+
+	var p Painting
+	p.UUID = uuid
+
+	query := `SELECT name, img_url, size, technique FROM paintings WHERE uuid = ?`
+
+	if err := db.QueryRow(query, uuid).Scan(&p.Name, &p.ImgURL, &p.Size, &p.Technique); err != nil {
+		return nil, err
+	} else {
+		return &p, err
+	}
+}
