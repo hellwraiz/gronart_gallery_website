@@ -1,6 +1,7 @@
 package db
 
 import (
+	"github.com/google/uuid"
 	"database/sql"
 	"log"
 	"os"
@@ -11,7 +12,6 @@ import (
 )
 
 type Painting struct {
-    ID          int       `json:"-"` // keep the id internal. No need to send it to ever send it to the frontend
     UUID        string    `json:"uuid"`
     Name        string    `json:"name"`
     Size        string    `json:"size"`
@@ -73,7 +73,7 @@ func InitDB() (*sql.DB, error) {
 func CreatePainting(db *sql.DB, p *Painting) error {
 	query := `INSERT INTO paintings (uuid, name, img_url, size, technique) VALUES (?, ?, ?, ?, ?)`
 
-    if _, err := db.Exec(query, p.UUID, p.Name, p.ImgURL, p.Size, p.Technique); err != nil {
+    if _, err := db.Exec(query, generateUUID(), p.Name, p.ImgURL, p.Size, p.Technique); err != nil {
         return err
     } else {
 		return nil
@@ -92,4 +92,9 @@ func GetPaintingByUUID(db *sql.DB, uuid string) (*Painting, error) {
 	} else {
 		return &p, err
 	}
+}
+
+
+func generateUUID() string {
+    return uuid.New().String()
 }
