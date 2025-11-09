@@ -1,42 +1,40 @@
 package db
 
 import (
-	"github.com/google/uuid"
-	"database/sql"
 	"log"
 	"os"
-	"path/filepath"
+	"time"
 
 	"github.com/joho/godotenv"      // gives me access to the .env file values in the app
+	"github.com/jmoiron/sqlx"		// Makes sql queries take up less space
 	_ "github.com/mattn/go-sqlite3" // so that the database/sql package can use sqlite
 )
 
 type Painting struct {
-    UUID        string    `json:"uuid"`
-    Name        string    `json:"name"`
-    Size        string    `json:"size"`
-    ImgURL      string    `json:"img_url"`
-    Technique   string    `json:"technique"`
-    UploadedAt  string    `json:"uploaded_at"`
-    LastEditedAt string   `json:"last_edited_at"`
+	ID				int			`db:"id" json:"-"`
+    UUID        	string    	`db:"uuid" json:"uuid"`
+    Name        	string    	`db:"name" json:"name"`
+	Author			string		`db:"author" json:"author"`
+    Size        	string    	`db:"size" json:"size"`
+	Price			int			`db:"price" json:"price"`
+    ImgURL      	string    	`db:"img_url" json:"img_url"`
+    Technique   	string    	`db:"technique" json:"technique"`
+    UploadedAt  	time.Time   `db:"uploaded_at" json:"uploaded_at"`
+    LastEditedAt 	time.Time   `db:"last_edited_at" json:"last_edited_at"`
 }
 
-func InitDB() (*sql.DB, error) {
+func InitDB() (*sqlx.DB, error) {
 	// loading .env
 	godotenv.Load()
 
 	// initializing the connection
 	dataDir := os.Getenv("DATA_DIR")
-	dbPath := filepath.Join(dataDir, "gallery.db")
-    db, err := sql.Open("sqlite3", dbPath)
+	dbPath := dataDir + "gallery.db"
+    db, err := sqlx.Open("sqlite3", dbPath)
     if err != nil {
 		return nil, err
     }
 	log.Printf("Database connected successfully on path: %s", dbPath)
-	log.Printf("Check this shit out %s", filepath.Join("data", "gallery.db"))
-	log.Printf("And now this shit %s", filepath.Join("/data", "gallery.db"))
-	log.Printf("Now this shit %s", filepath.Join("/data/", "gallery.db"))
-	log.Printf("This shit %s", filepath.Join("data/", "gallery.db"))
 
 	// Just checking if it works yknow
     if err := db.Ping(); err != nil {
@@ -68,33 +66,4 @@ func InitDB() (*sql.DB, error) {
 
 	// alles goed!
     return db, nil
-}
-
-func CreatePainting(db *sql.DB, p *Painting) error {
-	query := `INSERT INTO paintings (uuid, name, img_url, size, technique) VALUES (?, ?, ?, ?, ?)`
-
-    if _, err := db.Exec(query, generateUUID(), p.Name, p.ImgURL, p.Size, p.Technique); err != nil {
-        return err
-    } else {
-		return nil
-	}
-}
-
-func GetPaintingByUUID(db *sql.DB, uuid string) (*Painting, error) {
-
-	var p Painting
-	p.UUID = uuid
-
-	query := `SELECT name, img_url, size, technique FROM paintings WHERE uuid = ?`
-
-	if err := db.QueryRow(query, uuid).Scan(&p.Name, &p.ImgURL, &p.Size, &p.Technique); err != nil {
-		return nil, err
-	} else {
-		return &p, err
-	}
-}
-
-
-func generateUUID() string {
-    return uuid.New().String()
 }
