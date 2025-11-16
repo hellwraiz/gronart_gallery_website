@@ -1,22 +1,25 @@
 package db
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
 
+	"github.com/jmoiron/sqlx"       // Makes sql queries take up less space
 	"github.com/joho/godotenv"      // gives me access to the .env file values in the app
-	"github.com/jmoiron/sqlx"		// Makes sql queries take up less space
 	_ "github.com/mattn/go-sqlite3" // so that the database/sql package can use sqlite
 )
 
+// The schema
+// If you change this, also change the query in InitDB, as well as everything in crud.go
 type Painting struct {
 	ID				int			`db:"id" json:"-"`
     UUID        	string    	`db:"uuid" json:"uuid"`
     Name        	string    	`db:"name" json:"name"`
 	Author			string		`db:"author" json:"author"`
     Size        	string    	`db:"size" json:"size"`
-	Price			int			`db:"price" json:"price"`
+	Price			string		`db:"price" json:"price"`
     ImgURL      	string    	`db:"img_url" json:"img_url"`
     Technique   	string    	`db:"technique" json:"technique"`
     UploadedAt  	time.Time   `db:"uploaded_at" json:"uploaded_at"`
@@ -39,7 +42,7 @@ func InitDB() (*sqlx.DB, error) {
 	// Just checking if it works yknow
     if err := db.Ping(); err != nil {
         db.Close()
-        return nil, err
+		return nil, fmt.Errorf("Failed to connect to the database: %s", err)
     }
 
 	// initializing the actual database
@@ -48,8 +51,10 @@ func InitDB() (*sqlx.DB, error) {
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		uuid TEXT NOT NULL UNIQUE,
 		name TEXT NOT NULL,
-		img_url TEXT NOT NULL,
+		author TEXT NOT NULL,
 		size TEXT NOT NULL,
+		price TEXT NOT NULL,
+		img_url TEXT NOT NULL,
 		technique TEXT NOT NULL,
 		uploaded_at DATETIME DEFAULT (datetime('now', 'utc')),
 		last_edited_at DATETIME DEFAULT (datetime('now', 'utc'))
