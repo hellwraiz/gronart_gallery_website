@@ -4,7 +4,6 @@ import (
 	"gronart_gallery_website/internal/db"
 	"gronart_gallery_website/internal/routes"
 	"log"
-	"os"
 
 	"github.com/joho/godotenv"      // gives me access to the .env file values in the app
 	_ "github.com/mattn/go-sqlite3" // so that the database/sql package can use sqlite
@@ -28,9 +27,9 @@ func main() {
 		log.Fatal("Couldn't initiate the routes: ", err)
 	}
 
-	// Starting the server
-    port := os.Getenv("PORT")
-	log.Println("Starting server on port", port)
+	// Starting the server. It automatically gets the environment port variable.
+	log.Print("This is before starting the servenr")
 	router.Run()
+	log.Print("This is after starting the server")
 	
 }

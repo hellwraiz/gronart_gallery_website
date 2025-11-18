@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"log"
 	"net/http"
 	"os"
 
@@ -12,11 +13,14 @@ func InitRoutes() (*gin.Engine, error) {
 
 	godotenv.Load()
 
-	// Initiating GIN
+	log.Print("This is before setting the environment variable")
+	// Initiating GIN with a proper env
 	router := gin.Default()
-	if os.Getenv("GIN_MODE") == "release" {
+	if os.Getenv("GIN_MODE") == gin.ReleaseMode {
+		gin.SetMode(gin.ReleaseMode)
 		router.SetTrustedProxies(nil)
 	}
+	log.Print("This is after setting the environment variable")
 
 	// Setting up the static routes to be used to server frontend build files
 	router.Static("/assets", "./frontend/dist/assets")
