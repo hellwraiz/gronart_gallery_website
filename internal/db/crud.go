@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/jmoiron/sqlx"       // Makes sql queries take up less space
 	_ "github.com/mattn/go-sqlite3" // so that the database/sql package can use sqlite
@@ -96,7 +97,36 @@ func GetPaintingWithFilter(db *sqlx.DB, filters *Filter) (*[]Painting, error) {
 		}
 	}
 
-	
+	if filters.Techniques != nil {
+		query += " AND "
+		for index, technique := range filters.Sizes {
+			if index == 0 {
+				query += "technique = ?"
+				args = append(args, technique)
+			} else {
+				query += " OR technique = ?"
+				args = append(args, technique)
+			}
+		}
+	}
+
+	if filters.OrderBy != "" {
+		query += " ORDER BY ?"
+		args = append(args, filters.OrderBy)
+	}
+
+	if filters.Limit != 0 {
+		query += " LIMIT ?"
+		args = append(args, filters.Limit)
+		if filters.Offset != 0 {
+			query += " OFFSET ?"
+			args = append(args, filters.Offset)
+		}
+	}
+
+	log.Println("here's the final query:", query)
+
+	query += ";"
 
 	if err := db.Select(&paintings, query, args...); err != nil {
 		return nil, fmt.Errorf("Failed to get paintings with filters %v: %s", filters, err)
