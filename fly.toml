@@ -20,4 +20,7 @@ primary_region = 'ams'
   memory = '256mb'
   cpu_kind = 'shared'
   cpus = 1
-  memory_mb = 256
+
+[[mounts]]
+  source = "paintings_data"
+  destination = "/data"
