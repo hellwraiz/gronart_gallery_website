@@ -1,7 +1,7 @@
 package main
 
 import (
-	"gronart_gallery_website/internal/db"
+	"gronart_gallery_website/internal/database"
 	"gronart_gallery_website/internal/routes"
 	"log"
 
@@ -14,15 +14,15 @@ func main() {
 	// loading .env
 	godotenv.Load()
 
-	// starting the database
-	database, err := db.InitDB()
+	// starting the db
+	db, err := database.InitDB()
 	if err != nil {
 		log.Fatal("Couldn't initiate the database: ", err)
 	}
-    defer database.Close()
+    defer db.Close()
 
 	// Initiating the routes
-	router, err := routes.InitRoutes()
+	router, err := routes.InitRoutes(db)
 	if err != nil {
 		log.Fatal("Couldn't initiate the routes: ", err)
 	}

@@ -1,4 +1,4 @@
-package db
+package database
 
 import (
 	"fmt"
@@ -17,9 +17,9 @@ type Painting struct {
 	ID				int			`db:"id" json:"-"`
     UUID        	string    	`db:"uuid" json:"uuid"`
     Name        	string    	`db:"name" json:"name"`
-	Author			string		`db:"author" json:"author"`
+    Author			string		`db:"author" json:"author"`
     Size        	string    	`db:"size" json:"size"`
-	Price			string		`db:"price" json:"price"`
+	Price			int			`db:"price" json:"price"`
     ImgURL      	string    	`db:"img_url" json:"img_url"`
     Technique   	string    	`db:"technique" json:"technique"`
     UploadedAt  	time.Time   `db:"uploaded_at" json:"uploaded_at"`
@@ -53,14 +53,14 @@ func InitDB() (*sqlx.DB, error) {
 		name TEXT NOT NULL,
 		author TEXT NOT NULL,
 		size TEXT NOT NULL,
-		price TEXT NOT NULL,
+		price INTEGER NOT NULL,
 		img_url TEXT NOT NULL,
 		technique TEXT NOT NULL,
 		uploaded_at DATETIME DEFAULT (datetime('now', 'utc')),
 		last_edited_at DATETIME DEFAULT (datetime('now', 'utc'))
 	);
 	`
-    
+
 	_, err = db.Exec(query)
 	if err != nil {
 		db.Close()

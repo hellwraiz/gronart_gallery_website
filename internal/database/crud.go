@@ -1,4 +1,4 @@
-package db
+package database
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 type Filter struct {
 	Authors			[]string
     Sizes        	[]string
-	PriceRange		[]int
+	PriceRange		[2]int
     Techniques   	[]string
 	OrderBy			string
 	Limit			int
@@ -81,20 +81,18 @@ func GetPaintingWithFilter(db *sqlx.DB, filters *Filter) (*[]Painting, error) {
 		}
 	}
 
-	if filters.PriceRange != nil {
+	if filters.PriceRange[0] != -1 {
 		query += " AND "
-		if filters.PriceRange[0] != -1 {
-			if filters.PriceRange[1] != -1 {
-				query += "price BETWEEN ? AND ?"
-				args = append(args, filters.PriceRange[0], filters.PriceRange[1])
-			} else {
-				query += "price >= ?"
-				args = append(args, filters.PriceRange[0])
-			}
-		} else if filters.PriceRange[1] != -1 {
-			query += "price <= ?"
-			args = append(args, filters.PriceRange[1])
+		if filters.PriceRange[1] != -1 {
+			query += "price BETWEEN ? AND ?"
+			args = append(args, filters.PriceRange[0], filters.PriceRange[1])
+		} else {
+			query += "price >= ?"
+			args = append(args, filters.PriceRange[0])
 		}
+	} else if filters.PriceRange[1] != -1 {
+		query += " AND price <= ?"
+		args = append(args, filters.PriceRange[1])
 	}
 
 	if filters.Techniques != nil {
