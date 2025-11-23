@@ -38,7 +38,7 @@ func InitRoutes(db *sqlx.DB) (*gin.Engine, error) {
 	})
 
 
-	//// Setting up all of the crud operations. TODO: ADD A LOOOT OF DATA VALIDATION
+	//// Setting up all of the crud operations. TODO: ADD A LOOOT OF DATA VALIDATION, and identity verification for some of these
 	// Get filtered paintings
 	router.GET("/api/paintings", func(c *gin.Context) {
 		// Getting the parameters
