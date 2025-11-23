@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
@@ -94,6 +95,32 @@ func InitRoutes(db *sqlx.DB) (*gin.Engine, error) {
 		if err := database.CreatePainting(db, &painting); err != nil {
 			log.Printf("DB error: %s", err)
 		}
+	})
+
+	// Allow the frontend to upload media
+	router.POST("/api/upload", func(c *gin.Context) {
+		// Get the uploaded file
+		file, err := c.FormFile("image")
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "No file uploaded"})
+			return
+		}
+
+		// Generate unique filename
+		filename := filepath.Ext(file.Filename)
+
+		// Save to disk
+		uploadPath := os.Getenv("DATA_DIR") + filename
+		if err := c.SaveUploadedFile(file, uploadPath); err != nil {
+			log.Printf("Failed to save file: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
+			return
+		}
+
+		// Return the URL
+		c.JSON(http.StatusCreated, gin.H{
+			"img_url": uploadPath, 
+		})
 	})
 
 
