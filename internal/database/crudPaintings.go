@@ -156,4 +156,25 @@ func UpdatePainting(db *sqlx.DB, p *Painting) (error) {
     return nil
 }
 
+func DeletePainting(db *sqlx.DB, uuid string) (error) {
+	query := `
+	DELETE FROM paintings
+	WHERE uuid = ? 
+	`
+
+	result, err := db.Exec(query, uuid)
+	if err != nil {
+		return fmt.Errorf("Failed to delete painting: %s" ,err)
+	}
+	rowsAffected, err := result.RowsAffected()
+    if err != nil {
+		return fmt.Errorf("Unexpected error occured: %s", err)
+    }
+    if rowsAffected == 0 {
+		return fmt.Errorf("Failed to update painting: painting not found")
+    }
+
+	return nil
+}
+
 

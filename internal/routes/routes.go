@@ -3,6 +3,7 @@ package routes
 import (
 	"fmt"
 	"gronart_gallery_website/internal/database"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -92,6 +93,23 @@ func InitRoutes(db *sqlx.DB) (*gin.Engine, error) {
 
 			// Return the URL
 			c.JSON(http.StatusCreated, gin.H{ "img_url": uploadPath })
+		})
+
+		api.DELETE("/paintings", func(c *gin.Context) {
+			// get the painting, and img_url
+			uuid := c.Query("uuid")
+			painting, err := database.GetPaintingByUUID(db, uuid)
+			if isError(err, "DB error", http.StatusInternalServerError, c) { return }
+
+			imgUrl := painting.ImgURL
+
+			if err = database.DeletePainting(db, uuid); isError(err, "DB error", http.StatusInternalServerError, c) { return }
+
+			err = os.Remove(imgUrl)
+			if err != nil {
+				log.Printf("Warning: failed to delete uploaded file: %s", err)
+			}
+			c.JSON(http.StatusOK, gin.H{"message": "Painting deleted"})
 		})
 	}
 
