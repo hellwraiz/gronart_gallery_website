@@ -28,8 +28,6 @@ func main() {
 	}
 
 	// Starting the server. It automatically gets the environment port variable.
-	log.Print("This is before starting the servenr")
 	router.Run()
-	log.Print("This is after starting the server")
 	
 }
