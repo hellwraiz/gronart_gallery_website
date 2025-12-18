@@ -27,16 +27,16 @@ func InitRoutes(db *sqlx.DB) (*gin.Engine, error) {
 	}
 
 	// Setting up the static routes to be used to server frontend build files
-	router.Static("/assets", "./frontend/dist/assets")
+	router.Static("/_app", "./frontend/build/_app")
 	router.NoRoute(func(c *gin.Context) {
-		c.File("./frontend/dist/index.html")
+		c.File("./frontend/build/index.html")
 	})
 
 	// Setting up the api routes
 	{
 		api := router.Group("/api")
 
-		router.GET("/api/ping", func(c *gin.Context) {
+		router.GET("/ping", AuthMiddleware(), func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{
 				"message": "pong",
 			})
@@ -44,7 +44,7 @@ func InitRoutes(db *sqlx.DB) (*gin.Engine, error) {
 
 		//// Setting up all of the crud operations. TODO: ADD A LOOOT OF DATA VALIDATION, and identity verification for some of these
 		// Get filtered paintings
-		api.GET("/paintings", func(c *gin.Context) {
+		api.GET("/paintings", AuthMiddleware(), func(c *gin.Context) {
 			// Getting the parameters
 			authors, sizes, priceRangeStr, techniques, orderBy, limitStr, offsetStr :=
 			c.QueryArray("authors"), c.QueryArray("sizes"), c.QueryArray("price_range"),
@@ -69,7 +69,7 @@ func InitRoutes(db *sqlx.DB) (*gin.Engine, error) {
 		})
 
 		// Create a painting
-		api.POST("/paintings", func(c *gin.Context) {
+		api.POST("/paintings", AuthMiddleware(), func(c *gin.Context) {
 			var painting database.Painting
 			if err := c.BindJSON(&painting); isError(err, "JSON error", http.StatusBadRequest, c) { return }
 			if err := database.CreatePainting(db, &painting); isError(err, "DB error", http.StatusInternalServerError, c) { return }
@@ -79,7 +79,7 @@ func InitRoutes(db *sqlx.DB) (*gin.Engine, error) {
 		// Allow the frontend to upload media
 		// Pls don't exploit these issues 🙏
 		// TODO: Fix path traversal vulnerability (someone using "../../pwd"), file type validation, file size limit
-		api.POST("/upload", func(c *gin.Context) {
+		api.POST("/upload", AuthMiddleware(), func(c *gin.Context) {
 			// Get the uploaded file
 			file, err := c.FormFile("image")
 			if isError(err, "Upload error", http.StatusBadRequest, c) { return }
@@ -95,7 +95,7 @@ func InitRoutes(db *sqlx.DB) (*gin.Engine, error) {
 			c.JSON(http.StatusCreated, gin.H{ "img_url": uploadPath })
 		})
 
-		api.DELETE("/paintings", func(c *gin.Context) {
+		api.DELETE("/paintings", AuthMiddleware(), func(c *gin.Context) {
 			// get the painting, and img_url
 			uuid := c.Query("uuid")
 			painting, err := database.GetPaintingByUUID(db, uuid)
@@ -110,6 +110,10 @@ func InitRoutes(db *sqlx.DB) (*gin.Engine, error) {
 				log.Printf("Warning: failed to delete uploaded file: %s", err)
 			}
 			c.JSON(http.StatusOK, gin.H{"message": "Painting deleted"})
+		})
+
+		api.POST("/login", AuthMiddleware(), func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{"message": "Successfully logged in!"})
 		})
 	}
 

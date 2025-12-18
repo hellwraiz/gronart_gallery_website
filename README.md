@@ -72,3 +72,7 @@ Add authentication (most critical - we can discuss how)
 Validate file uploads (type, size)
 Add rate limiting to upload endpoint
 Set max limit on GET queries (you already have this!)
+
+### Authentication
+
+Here's the plan, we're going to use session tokens while using cookies to store them. For now though we simplify.
