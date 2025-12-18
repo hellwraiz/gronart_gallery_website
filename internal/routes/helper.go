@@ -8,6 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type Login struct {
+	Email string `json:"email"`
+	Password string `json:"password"`
+}
+
 func StoI(str string, defalt int) int {
 	out, err := strconv.Atoi(str)
 	if err != nil { out = defalt; log.Panicf("Could not parse minPrice param: %s", err) }

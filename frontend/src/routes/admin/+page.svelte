@@ -1,7 +1,7 @@
 <script>
     import { goto } from '$app/navigation';
 
-    let password = localStorage.getItem('password')
+    let password = localStorage.getItem('pass')
     if (!password) {
         goto('/login')
     }

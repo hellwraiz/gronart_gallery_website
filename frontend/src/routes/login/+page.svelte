@@ -6,9 +6,8 @@
     async function login() {
         const res = await axios.post('/api/login', { email: email, password: password })
 
-        console.log(res)
-
-        if (res.data.isLogged === true) {
+        if (res.data.isLogged === "true") {
+            localStorage.setItem('email', email)
             localStorage.setItem('pass', password)
             window.location.href = '/admin'
         } else {

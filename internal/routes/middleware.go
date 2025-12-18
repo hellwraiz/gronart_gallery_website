@@ -7,28 +7,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Login struct {
-	Email string `json:"email"`
-	Password string `json:"password"`
-}
-
 // Middleware to check token
 func AuthMiddleware() gin.HandlerFunc {
     return func(c *gin.Context) {
-		var login Login
-        /* authHeader := c.GetHeader("Authorization")
-        if authHeader == "" {
+        email := c.GetHeader("email")
+		pass := c.GetHeader("pass")
+        if email == "" || pass == "" {
             c.JSON(401, gin.H{"error": "No token"})
             c.Abort()
             return
-        } */
-		c.BindJSON(&login)
-		log.Printf("Here's what I got: %v\n", login)
+        }
+		log.Printf("Here's what I got: %s %s\n", email, pass)
         
         
         // Check if password is valid
-		log.Printf("Here's my current env: %s %s\n", os.Getenv("TEMP_EMAIL"), os.Getenv("TEMP_PASSWD"))
-		if os.Getenv("TEMP_EMAIL") == login.Email && os.Getenv("TEMP_PASSWD") == login.Password {
+		if os.Getenv("TEMP_EMAIL") == email && os.Getenv("TEMP_PASSWD") == pass {
 			c.Set("isLogged", true)
 			c.Next()
 		} else {
