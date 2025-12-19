@@ -26,6 +26,22 @@ type Painting struct {
     LastEditedAt 	time.Time   `db:"last_edited_at" json:"last_edited_at"`
 }
 
+type User struct {
+    ID           string    `json:"id" gorm:"primaryKey"`
+    Email        string    `json:"email" gorm:"unique;not null"`
+    PasswordHash string    `json:"-" gorm:"not null"` // Never send to frontend
+    CreatedAt    time.Time `json:"created_at"`
+    UpdatedAt    time.Time `json:"updated_at"`
+}
+
+// Optional: Session table (if using stateful tokens)
+type Session struct {
+    Token     string    `gorm:"primaryKey"`
+    UserID    string    `gorm:"not null"`
+    ExpiresAt time.Time `gorm:"not null"`
+    CreatedAt time.Time
+}
+
 func InitDB() (*sqlx.DB, error) {
 	// loading .env
 	godotenv.Load()
