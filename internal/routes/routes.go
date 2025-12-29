@@ -115,12 +115,10 @@ func InitRoutes(db *sqlx.DB) (*gin.Engine, error) {
 		api.POST("/login", func(c *gin.Context) {
 			var login Login
 			c.BindJSON(&login)
-			log.Printf("Here's what I got: %v\n", login)
 
 			// Check if password is valid
-			log.Printf("Here's my current env: %s %s\n", os.Getenv("TEMP_EMAIL"), os.Getenv("TEMP_PASSWD"))
 			if os.Getenv("TEMP_EMAIL") == login.Email && os.Getenv("TEMP_PASSWD") == login.Password {
-				c.JSON(http.StatusOK, gin.H{"isLogged": "true"})
+				c.Status(http.StatusOK)
 			} else {
 				c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			}

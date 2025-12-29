@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	
+
 	// loading .env
 	godotenv.Load()
 
@@ -19,7 +19,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Couldn't initiate the database: ", err)
 	}
-    defer db.Close()
+	defer db.Close()
 
 	// Initiating the routes
 	router, err := routes.InitRoutes(db)
@@ -29,5 +29,4 @@ func main() {
 
 	// Starting the server. It automatically gets the environment port variable.
 	router.Run()
-	
 }
