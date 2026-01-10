@@ -13,13 +13,13 @@ COPY go.mod go.sum ./
 RUN go mod download && go mod verify
 COPY . .
 # Copy the built frontend from previous stage
-COPY --from=frontend-builder /build/dist ./frontend/dist
+COPY --from=frontend-builder /build/build ./frontend/build
 RUN go build -v -o run-app .
 
 # Stage 3: Final runtime image
 FROM debian:bookworm
 WORKDIR /app
 COPY --from=go-builder /build/run-app /usr/local/bin/
-COPY --from=go-builder /build/frontend/dist ./frontend/dist
+COPY --from=go-builder /build/frontend/build ./frontend/build
 EXPOSE 8080
 CMD ["run-app"]
