@@ -31,6 +31,8 @@ func InitRoutes(db *sqlx.DB) (*gin.Engine, error) {
 	router.NoRoute(func(c *gin.Context) {
 		c.File("./frontend/build/index.html")
 	})
+	// These ones are just to expose the data folder to the frontend
+	router.Static("/images", os.Getenv("DATA_DIR")+"images")
 
 	// Setting up the api routes
 	{
@@ -44,26 +46,34 @@ func InitRoutes(db *sqlx.DB) (*gin.Engine, error) {
 
 		//// Setting up all of the crud operations. TODO: ADD A LOOOT OF DATA VALIDATION, and identity verification for some of these
 		// Get filtered paintings
-		api.GET("/paintings", AuthMiddleware(), func(c *gin.Context) {
+		api.GET("/paintings", func(c *gin.Context) {
 			// Getting the parameters
 			authors, sizes, priceRangeStr, techniques, orderBy, limitStr, offsetStr :=
-			c.QueryArray("authors"), c.QueryArray("sizes"), c.QueryArray("price_range"),
-			c.QueryArray("techniques"), c.Query("order_by"), c.Query("limit"), c.Query("offset")
+				c.QueryArray("authors"), c.QueryArray("sizes"), c.QueryArray("price_range"),
+				c.QueryArray("techniques"), c.Query("order_by"), c.Query("limit"), c.Query("offset")
 
 			// Doing data processing/validation
 			// TODO: improve data validation
-			priceRange := [2]int{StoI(priceRangeStr[0], -1), StoI(priceRangeStr[1], -1)}
+			var priceRange [2]int
+			if len(priceRangeStr) == 2 {
+				priceRange = [2]int{StoI(priceRangeStr[0], -1), StoI(priceRangeStr[1], -1)}
+			} else {
+				log.Printf("Couldn't parse this price range: %v", priceRangeStr)
+				priceRange = [2]int{-1, -1}
+			}
 
 			limit := StoI(limitStr, 20)
 			offset := StoI(offsetStr, 0)
 
 			// Populate the filter thing
-			filters := &database.Filter{ Authors: authors, Sizes: sizes, PriceRange: priceRange,
-			Techniques: techniques, OrderBy: orderBy, Limit: limit, Offset: offset, }
+			filters := &database.Filter{Authors: authors, Sizes: sizes, PriceRange: priceRange,
+				Techniques: techniques, OrderBy: orderBy, Limit: limit, Offset: offset}
 
 			// Get the actual paintings!
 			paintings, err := database.GetPaintingWithFilter(db, filters)
-			if isError(err, "DB error", http.StatusInternalServerError, c) { return }
+			if isError(err, "DB error", http.StatusInternalServerError, c) {
+				return
+			}
 
 			c.JSON(http.StatusOK, paintings)
 		})
@@ -71,8 +81,12 @@ func InitRoutes(db *sqlx.DB) (*gin.Engine, error) {
 		// Create a painting
 		api.POST("/paintings", AuthMiddleware(), func(c *gin.Context) {
 			var painting database.Painting
-			if err := c.BindJSON(&painting); isError(err, "JSON error", http.StatusBadRequest, c) { return }
-			if err := database.CreatePainting(db, &painting); isError(err, "DB error", http.StatusInternalServerError, c) { return }
+			if err := c.BindJSON(&painting); isError(err, "JSON error", http.StatusBadRequest, c) {
+				return
+			}
+			if err := database.CreatePainting(db, &painting); isError(err, "DB error", http.StatusInternalServerError, c) {
+				return
+			}
 			c.JSON(http.StatusCreated, painting)
 		})
 
@@ -82,30 +96,38 @@ func InitRoutes(db *sqlx.DB) (*gin.Engine, error) {
 		api.POST("/upload", AuthMiddleware(), func(c *gin.Context) {
 			// Get the uploaded file
 			file, err := c.FormFile("image")
-			if isError(err, "Upload error", http.StatusBadRequest, c) { return }
+			if isError(err, "Upload error", http.StatusBadRequest, c) {
+				return
+			}
 
 			// Generate unique filename
 			filename := fmt.Sprintf("%d%s", time.Now().UnixNano(), filepath.Ext(file.Filename))
 
 			// Save to disk
-			uploadPath := os.Getenv("DATA_DIR") + filename
-			if err = c.SaveUploadedFile(file, uploadPath); isError(err, "Failed to save file", http.StatusInternalServerError, c) { return }
+			uploadPath := os.Getenv("DATA_DIR") + "images/" + filename
+			if err = c.SaveUploadedFile(file, uploadPath); isError(err, "Failed to save file", http.StatusInternalServerError, c) {
+				return
+			}
 
 			// Return the URL
-			c.JSON(http.StatusCreated, gin.H{ "img_url": uploadPath })
+			c.JSON(http.StatusCreated, gin.H{"img_url": filename})
 		})
 
 		api.DELETE("/paintings", AuthMiddleware(), func(c *gin.Context) {
 			// get the painting, and img_url
 			uuid := c.Query("uuid")
 			painting, err := database.GetPaintingByUUID(db, uuid)
-			if isError(err, "DB error", http.StatusInternalServerError, c) { return }
+			if isError(err, "DB error", http.StatusInternalServerError, c) {
+				return
+			}
 
 			imgUrl := painting.ImgURL
 
-			if err = database.DeletePainting(db, uuid); isError(err, "DB error", http.StatusInternalServerError, c) { return }
+			if err = database.DeletePainting(db, uuid); isError(err, "DB error", http.StatusInternalServerError, c) {
+				return
+			}
 
-			err = os.Remove(imgUrl)
+			err = os.Remove(os.Getenv("DATA_DIR") + "images/" + imgUrl)
 			if err != nil {
 				log.Printf("Warning: failed to delete uploaded file: %s", err)
 			}
@@ -124,9 +146,6 @@ func InitRoutes(db *sqlx.DB) (*gin.Engine, error) {
 			}
 		})
 	}
-
-
-
 
 	return router, nil
 }

@@ -31,3 +31,4 @@ go.work.sum
 
 # -- My additions go here!!! --
 gallery.db
+data/

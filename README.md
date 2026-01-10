@@ -76,3 +76,9 @@ Set max limit on GET queries (you already have this!)
 ### Authentication
 
 Here's the plan, we're going to use session tokens while using cookies to store them. For now though we simplify.
+
+## Other changes
+
+### Cleanup
+
+Since upload and painting stuff is separate make sure that painting creation and editing cleans up everything properly in case that there's a problem, so no hanging images are left!

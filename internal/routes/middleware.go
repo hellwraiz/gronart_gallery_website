@@ -12,14 +12,13 @@ func AuthMiddleware() gin.HandlerFunc {
     return func(c *gin.Context) {
         email := c.GetHeader("email")
 		pass := c.GetHeader("pass")
+		log.Printf("Here's what I got: %s %s\n", email, pass)
         if email == "" || pass == "" {
             c.JSON(401, gin.H{"error": "No token"})
             c.Abort()
             return
         }
-		log.Printf("Here's what I got: %s %s\n", email, pass)
-        
-        
+
         // Check if password is valid
 		if os.Getenv("TEMP_EMAIL") == email && os.Getenv("TEMP_PASSWD") == pass {
 			c.Set("isLogged", true)
