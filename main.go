@@ -3,16 +3,21 @@ package main
 import (
 	"gronart_gallery_website/internal/inits"
 	"log"
+	"os"
 
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"      // gives me access to the .env file values in the app
 	_ "github.com/mattn/go-sqlite3" // so that the database/sql package can use sqlite
 )
 
 func main() {
 
-	// loading .env
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file", err)
+	// loading .env. Only necessary if in dev!
+	// Otherwise fly does this functions job. Since no .env file in prod
+	if os.Getenv("GIN_MODE") != gin.ReleaseMode {
+		if err := godotenv.Load(); err != nil {
+			log.Fatal("Error loading .env file: ", err)
+		}
 	}
 
 	// starting the db
