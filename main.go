@@ -1,8 +1,7 @@
 package main
 
 import (
-	"gronart_gallery_website/internal/database"
-	"gronart_gallery_website/internal/routes"
+	"gronart_gallery_website/internal/inits"
 	"log"
 
 	"github.com/joho/godotenv"      // gives me access to the .env file values in the app
@@ -12,17 +11,19 @@ import (
 func main() {
 
 	// loading .env
-	godotenv.Load()
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
 	// starting the db
-	db, err := database.InitDB()
+	db, err := inits.InitDB()
 	if err != nil {
 		log.Fatal("Couldn't initiate the database: ", err)
 	}
 	defer db.Close()
 
 	// Initiating the routes
-	router, err := routes.InitRoutes(db)
+	router, err := inits.InitRoutes(db)
 	if err != nil {
 		log.Fatal("Couldn't initiate the routes: ", err)
 	}

@@ -1,4 +1,4 @@
-package routes
+package paintings
 
 import (
 	"fmt"
@@ -6,13 +6,15 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
-type Login struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+// --------------------------- repository helpers --------------------------
+func generateUUID() string {
+	return uuid.New().String()
 }
 
+// ---------------------------- handler helpers ----------------------------
 func StoI(str string, defalt int) int {
 	out, err := strconv.Atoi(str)
 	if err != nil {

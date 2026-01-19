@@ -1,4 +1,4 @@
-package database
+package paintings
 
 import (
 	"fmt"
@@ -8,14 +8,35 @@ import (
 	_ "github.com/mattn/go-sqlite3" // so that the database/sql package can use sqlite
 )
 
-type Filter struct {
-	Authors			[]string
-    Sizes        	[]string
-	PriceRange		[2]int
-    Techniques   	[]string
-	OrderBy			string
-	Limit			int
-	Offset			int
+func InitDB(db *sqlx.DB) error {
+
+	// initializing the actual database
+	query := `
+	CREATE TABLE IF NOT EXISTS paintings (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		uuid TEXT NOT NULL UNIQUE,
+		name TEXT NOT NULL,
+		author TEXT NOT NULL,
+		size TEXT NOT NULL,
+		price INTEGER NOT NULL,
+		img_url TEXT NOT NULL,
+		technique TEXT NOT NULL,
+		uploaded_at DATETIME DEFAULT (datetime('now', 'utc')),
+		last_edited_at DATETIME DEFAULT (datetime('now', 'utc'))
+	);
+	`
+
+	_, err := db.Exec(query)
+	if err != nil {
+		return err
+	}
+
+	query = `CREATE INDEX IF NOT EXISTS idx_paintings_uuid ON paintings(uuid);`
+
+	_, err = db.Exec(query)
+
+	return err
+
 }
 
 func CreatePainting(db *sqlx.DB, p *Painting) error {
@@ -24,7 +45,7 @@ func CreatePainting(db *sqlx.DB, p *Painting) error {
 
 	p.UUID = generateUUID()
 
-    if result, err := db.NamedExec(query, p); err != nil {
+	if result, err := db.NamedExec(query, p); err != nil {
 		return fmt.Errorf("Failed to create painting: %s", err)
 	} else if numAffected, errResult := result.RowsAffected(); numAffected == 0 && errResult == nil {
 		return fmt.Errorf("Failed to create painting: Database unaffected")
@@ -41,7 +62,6 @@ func GetPaintingByUUID(db *sqlx.DB, uuid string) (*Painting, error) {
 
 	query := `SELECT * FROM paintings WHERE uuid = ?`
 
-
 	if err := db.Get(&p, query, uuid); err != nil {
 		return nil, fmt.Errorf("Failed to get painting with uuid %s: %s", uuid, err)
 	}
@@ -53,7 +73,7 @@ func GetPaintingWithFilter(db *sqlx.DB, filters *Filter) (*[]Painting, error) {
 	var paintings []Painting
 	var args []any
 
-	query := `SELECT * FROM paintings WHERE 1=1`
+	query := "SELECT * FROM paintings WHERE 1=1"
 
 	if filters.Authors != nil {
 		query += " AND "
@@ -108,7 +128,12 @@ func GetPaintingWithFilter(db *sqlx.DB, filters *Filter) (*[]Painting, error) {
 		}
 	}
 
-	if filters.OrderBy != "" {
+	if filters.OrderBy != "" { // sql injection attack possibility!!!!! Match against allowed thingies
+		// will use this later on
+		/* allowedOrders := map[string]bool{"price": true, "name": true, "uploaded_at": true}
+		   if allowedOrders[*filters.OrderBy] {
+		       fb.query.WriteString(" ORDER BY " + *filters.OrderBy)
+		   } */
 		query += " ORDER BY ?"
 		args = append(args, filters.OrderBy)
 	}
@@ -132,31 +157,75 @@ func GetPaintingWithFilter(db *sqlx.DB, filters *Filter) (*[]Painting, error) {
 	return &paintings, nil
 }
 
-func UpdatePainting(db *sqlx.DB, p *Painting) (error) {
-	
-    query := `
+func UpdatePainting(db *sqlx.DB, p *PostPainting) (*Painting, error) {
+
+	var args []any
+
+	/* query := `
+		UPDATE paintings
+		SET name = :name, author = :author, size = :size, price = :price, img_url = :img_url, technique = :technique, last_edited_at = datetime('now', 'utc')
+		WHERE uuid = :uuid
+	    ` */
+
+	query := `
 	UPDATE paintings
-	SET name = :name, author = :author, size = :size, price = :price, img_url = :img_url, technique = :technique, last_edited_at = datetime('now', 'utc')
-	WHERE uuid = :uuid
+	SET 
     `
-    
-    result, err := db.NamedExec(query, p)
-    if err != nil {
-        return fmt.Errorf("Failed to update painting: %w", err)
-    }
-	
-    rowsAffected, err := result.RowsAffected()
-    if err != nil {
-		return fmt.Errorf("Unexpected error occured: %s", err)
-    }
-    if rowsAffected == 0 {
-		return fmt.Errorf("Failed to update painting: painting not found")
-    }
-    
-    return nil
+
+	if p.Name != nil {
+		query += "name = :name, "
+		args = append(args, *p.Name)
+	}
+
+	if p.Author != nil {
+		query += "author = :author, "
+		args = append(args, *p.Author)
+	}
+
+	if p.Size != nil {
+		query += "size = :size, "
+		args = append(args, *p.Size)
+	}
+
+	if p.Price != nil {
+		query += "price = :price, "
+		args = append(args, *p.Price)
+	}
+
+	if p.ImgURL != nil {
+		query += "img_url = :img_url, "
+		args = append(args, *p.ImgURL)
+	}
+
+	if p.Technique != nil {
+		query += "technique = :technique, "
+		args = append(args, *p.Technique)
+	}
+
+	query += `last_edited_at = datetime('now', 'utc')
+	WHERE uuid = :uuid`
+
+	result, err := db.NamedExec(query, p)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to update painting: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return nil, fmt.Errorf("Unexpected error occured: %s", err)
+	}
+	if rowsAffected == 0 {
+		return nil, fmt.Errorf("Failed to update painting: painting not found")
+	}
+
+	newPainting, err := GetPaintingByUUID(db, p.UUID)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get updated painting: %s", err)
+	}
+	return newPainting, nil
 }
 
-func DeletePainting(db *sqlx.DB, uuid string) (error) {
+func DeletePainting(db *sqlx.DB, uuid string) error {
 	query := `
 	DELETE FROM paintings
 	WHERE uuid = ? 
@@ -164,17 +233,15 @@ func DeletePainting(db *sqlx.DB, uuid string) (error) {
 
 	result, err := db.Exec(query, uuid)
 	if err != nil {
-		return fmt.Errorf("Failed to delete painting: %s" ,err)
+		return fmt.Errorf("Failed to delete painting: %s", err)
 	}
 	rowsAffected, err := result.RowsAffected()
-    if err != nil {
+	if err != nil {
 		return fmt.Errorf("Unexpected error occured: %s", err)
-    }
-    if rowsAffected == 0 {
+	}
+	if rowsAffected == 0 {
 		return fmt.Errorf("Failed to update painting: painting not found")
-    }
+	}
 
 	return nil
 }
-
-

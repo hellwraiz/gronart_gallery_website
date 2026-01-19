@@ -1,6 +1,29 @@
 # gronart-galery-website
 Hi! This is a website that I made for my mother, who has her own gallery. Enjoy!
 
+# Project structure
+More so for me than anyone. But if you're curious about the login behind the code then here's the place!
+
+## Principles
+Type = "what purpose does it serve?" = models, handlers, repository, helpers
+Domain = "what object is it?" = paintings, media, routes
+1. Separate with folders by domain, not type
+2. Have one init folder that initializes all domains, separating using files by type.
+3. In the end call the files in the init folder in main.go
+
+### Default files inside each domain's folder (with exceptions ofc)
+1. `models.go` -> stores database schemas, and all sorts of struct types that you use
+    - Use pointers for optional fields (put/patch requests)
+    - Use regular types for read fields (read requests)
+    - Use regular + `binding: required` for required fields (post requests)
+2. `handlers.go` -> stores all http request handlers.
+    - Handles authentication, authorization and input validation
+3. `repository.go` -> stores all database crud operations related stuff
+    - Only concerned about performing the database query. Assumes that all the input is already valid.
+        - MAKE SURE TO DO VALIDATION IN `handlers.go` THEN!!!
+4. `helpers.go` -> stores all functions that aren't directly involved in the way the file performs, but still valuable.
+
+
 # Future things
 
 ## Security stuff
