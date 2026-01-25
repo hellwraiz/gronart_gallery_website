@@ -123,7 +123,7 @@
         {/each}
         <button
             on:click={() => (showCreate = true)}
-            class="mt-3 w-40 self-center rounded-xl bg-green-300 p-3">Create Painting</button
+            class="mt-3 w-40 self-center rounded-xl bg-green-300 p-3">Upload Painting</button
         >
     </div>
     {#if showCreate}
