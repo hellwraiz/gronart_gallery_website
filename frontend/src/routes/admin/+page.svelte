@@ -54,8 +54,6 @@
         }
 
         try {
-            console.log(localStorage.getItem("email"))
-            console.log(localStorage.getItem("pass"))
             let res = await axios.post("api/upload", photoData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
@@ -64,33 +62,34 @@
                 }
             })
             let img_url = res.data.img_url
+            if (img_url == "cover.jpg") {
+                alert("successfully changed cover image")
+            } else {
+                let intPrice = parseInt(form.price, 10)
 
-            let intPrice = parseInt(form.price, 10)
-
-            res = await axios.post(
-                "api/paintings",
-                {
-                    name: form.name,
-                    author: form.author,
-                    size: form.size,
-                    price: intPrice,
-                    img_url: img_url,
-                    technique: form.technique
-                },
-                {
-                    headers: {
-                        email: localStorage.getItem("email"),
-                        pass: localStorage.getItem("pass")
+                res = await axios.post(
+                    "api/paintings",
+                    {
+                        name: form.name,
+                        author: form.author,
+                        size: form.size,
+                        price: intPrice,
+                        img_url: img_url,
+                        technique: form.technique
+                    },
+                    {
+                        headers: {
+                            email: localStorage.getItem("email"),
+                            pass: localStorage.getItem("pass")
+                        }
                     }
-                }
-            )
+                )
 
-            console.log(res)
-            await invalidateAll()
-            alert("Uploaded the painting successfully!")
+                await invalidateAll()
+                alert("Uploaded the painting successfully!")
+            }
         } catch (error) {
             alert("Couldn't upload painting. Please try again later!")
-            console.log(error)
         }
     }
 </script>

@@ -44,7 +44,7 @@ func (h *DBHandler) getFiltered(c *gin.Context) {
 		priceRange = [2]int{-1, -1}
 	}
 
-	limit := StoI(limitStr, 20)
+	limit := StoI(limitStr, 100)
 	offset := StoI(offsetStr, 0)
 
 	// Populate the filter thing
