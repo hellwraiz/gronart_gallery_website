@@ -1,15 +1,13 @@
 // +page.ts
 import { redirect } from "@sveltejs/kit"
 import axios from "axios"
-
-export async function load() {
-    let email = localStorage.getItem("email")
-    let password = localStorage.getItem("pass")
-    try {
-        await axios.post("/api/login", { email: email, password: password })
-        console.log("successfully logged in")
-    } catch {
-        console.log("login failed. Retreating")
-        throw redirect(303, "/login")
-    }
+let email = localStorage.getItem("email")
+let password = localStorage.getItem("pass")
+console.log("test" + email + " " + password)
+try {
+    console.log("hello")
+    await axios.post("/api/login", { email: email, password: password })
+} catch {
+    console.log("no")
+    throw redirect(303, "/login")
 }

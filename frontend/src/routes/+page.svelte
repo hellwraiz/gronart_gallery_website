@@ -1,6 +1,5 @@
 <script>
     export let data
-    console.log(data)
     let paintings = data.paintings
 </script>
 
@@ -16,6 +15,12 @@
                 <h1>{painting.name}</h1>
                 -
                 <h2>{painting.author}</h2>
+                -
+                <h2>{painting.price}€</h2>
+                -
+                <h2>{painting.size}</h2>
+                -
+                <h2>{painting.technique}</h2>
             </div>
         </div>
     {/each}

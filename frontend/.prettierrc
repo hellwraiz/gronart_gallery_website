@@ -9,7 +9,7 @@
         "prettier-plugin-svelte",
         "prettier-plugin-tailwindcss"
     ],
-    "tailwindStylesheet": "./src/routes/layout.css",
+    "tailwindStylesheet": "./src/routes/app.css",
     "overrides": [
         {
             "files": "*.svelte",

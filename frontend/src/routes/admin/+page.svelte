@@ -54,6 +54,8 @@
         }
 
         try {
+            console.log(localStorage.getItem("email"))
+            console.log(localStorage.getItem("pass"))
             let res = await axios.post("api/upload", photoData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
