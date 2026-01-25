@@ -21,7 +21,7 @@ func login(c *gin.Context) {
 	}
 }
 
-func Init(api *gin.RouterGroup) {
+func InitRoutes(api *gin.RouterGroup) {
 	auth := api.Group("/login")
 
 	auth.POST("", login)

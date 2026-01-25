@@ -1,6 +1,7 @@
 package inits
 
 import (
+	"gronart_gallery_website/internal/auth"
 	"gronart_gallery_website/internal/media"
 	"gronart_gallery_website/internal/paintings"
 	"os"
@@ -33,6 +34,7 @@ func InitRoutes(db *sqlx.DB) (*gin.Engine, error) {
 
 	paintings.InitRoutes(db, api)
 	media.InitRoutes(api)
+	auth.InitRoutes(api)
 
 	return router, nil
 }
