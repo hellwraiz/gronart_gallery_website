@@ -20,7 +20,11 @@
     <div class="mx-auto grid max-w-content grid-cols-4 gap-2.5 pt-6">
         {#each paintings as painting}
             <div class="flex flex-col justify-between">
-                <img src={"/images/" + painting.img_url} alt={painting.name} />
+                <img
+                    src={"/images/" + painting.img_url}
+                    class="aspect-square object-contain"
+                    alt={painting.name}
+                />
                 <div class="flex flex-col gap-1 p-3 pt-1">
                     <h1 class="pb-2">{painting.name}, {painting.size}, {painting.technique}</h1>
                     <h2>{painting.author}</h2>
