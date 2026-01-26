@@ -26,6 +26,7 @@ func InitRoutes(db *sqlx.DB) (*gin.Engine, error) {
 		c.File("./frontend/build/index.html")
 	})
 	router.StaticFile("/robots.txt", "./frontend/build/robots.txt")
+	router.StaticFile("/favicon.png", "./frontend/build/favicon.png")
 	// These ones are just to expose the data folder to the frontend though
 	router.Static("/images", os.Getenv("DATA_DIR")+"images")
 

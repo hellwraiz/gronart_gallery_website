@@ -9,7 +9,7 @@
 <header class="sticky top-0 z-50 w-full bg-gray-200 px-surround py-8 shadow-xl">
     <div class="mx-auto flex max-w-content items-center gap-10 text-2xl">
         <a href="/" class="w-28">
-            <img src="./src/lib/assets/favicon.png" class="w-28" alt="LOGO" />
+            <img src="/favicon.png" class="w-28" alt="LOGO" />
         </a>
         <a href="/">Home</a>
         <a href="/">Catalog</a>
