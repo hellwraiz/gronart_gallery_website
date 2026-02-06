@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func uploadMedia(c *gin.Context, file *multipart.FileHeader) (string, error) {
+func UploadImg(c *gin.Context, file *multipart.FileHeader) (string, error) {
 
 	// HACK: Temporarily let this add a cover.jpg image that allows you to set some image as the cover
 	// Generate unique filename
@@ -28,4 +28,15 @@ func uploadMedia(c *gin.Context, file *multipart.FileHeader) (string, error) {
 		return "", err
 	}
 	return filename, nil
+}
+
+func DeleteImg(filename string) error {
+
+	err := os.Remove(os.Getenv("DATA_DIR") + "images/" + filename)
+	if err != nil {
+		return fmt.Errorf("Warning: failed to delete uploaded file: %s", err)
+	}
+
+	return nil
+
 }

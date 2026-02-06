@@ -8,40 +8,9 @@ import (
 	_ "github.com/mattn/go-sqlite3" // so that the database/sql package can use sqlite
 )
 
-func InitDB(db *sqlx.DB) error {
-
-	// initializing the actual database
-	query := `
-	CREATE TABLE IF NOT EXISTS paintings (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		uuid TEXT NOT NULL UNIQUE,
-		name TEXT NOT NULL,
-		author TEXT NOT NULL,
-		size TEXT NOT NULL,
-		price INTEGER NOT NULL,
-		img_url TEXT NOT NULL,
-		technique TEXT NOT NULL,
-		uploaded_at DATETIME DEFAULT (datetime('now', 'utc')),
-		last_edited_at DATETIME DEFAULT (datetime('now', 'utc'))
-	);
-	`
-
-	_, err := db.Exec(query)
-	if err != nil {
-		return err
-	}
-
-	query = `CREATE INDEX IF NOT EXISTS idx_paintings_uuid ON paintings(uuid);`
-
-	_, err = db.Exec(query)
-
-	return err
-
-}
-
 func CreatePainting(db *sqlx.DB, p *Painting) error {
 
-	query := `INSERT INTO paintings (uuid, name, author, size, price, img_url, technique) VALUES (:uuid, :name, :author, :size, :price, :img_url, :technique)`
+	query := `INSERT INTO paintings (uuid, name, author, size, price, img_url, technique, description, sold, printable, copiable) VALUES (:uuid, :name, :author, :size, :price, :img_url, :technique, :description, :sold, :printable, :copiable)`
 
 	p.UUID = generateUUID()
 
@@ -128,28 +97,41 @@ func GetPaintingWithFilter(db *sqlx.DB, filters *Filter) (*[]Painting, error) {
 		}
 	}
 
-	if filters.OrderBy != "" { // sql injection attack possibility!!!!! Match against allowed thingies
-		// will use this later on
-		/* allowedOrders := map[string]bool{"price": true, "name": true, "uploaded_at": true}
-		   if allowedOrders[*filters.OrderBy] {
-		       fb.query.WriteString(" ORDER BY " + *filters.OrderBy)
-		   } */
-		query += " ORDER BY ?"
-		args = append(args, filters.OrderBy)
+	if filters.Sold != -1 {
+		query += " AND sold = ?"
+		args = append(args, filters.Sold)
 	}
 
-	if filters.Limit != 0 {
+	if filters.Printable != -1 {
+		query += " AND printable = ?"
+		args = append(args, filters.Printable)
+	}
+
+	if filters.Copiable != -1 {
+		query += " AND copiable = ?"
+		args = append(args, filters.Copiable)
+	}
+
+	if filters.OrderBy != "" {
+		allowedOrders := map[string]bool{"price": true, "name": true, "uploaded_at": true}
+		if allowedOrders[filters.OrderBy] {
+			query += " ORDER BY ?"
+			args = append(args, filters.OrderBy)
+		}
+	}
+
+	if filters.Limit != -1 {
 		query += " LIMIT ?"
 		args = append(args, filters.Limit)
-		if filters.Offset != 0 {
+		if filters.Offset != -1 {
 			query += " OFFSET ?"
 			args = append(args, filters.Offset)
 		}
 	}
 
-	log.Println("here's the final query:", query)
-
 	query += ";"
+
+	log.Println("here's the final query:", query)
 
 	if err := db.Select(&paintings, query, args...); err != nil {
 		return nil, fmt.Errorf("Failed to get paintings with filters %v: %s", filters, err)
@@ -157,15 +139,9 @@ func GetPaintingWithFilter(db *sqlx.DB, filters *Filter) (*[]Painting, error) {
 	return &paintings, nil
 }
 
-func UpdatePainting(db *sqlx.DB, p *PostPainting) (*Painting, error) {
+func UpdatePainting(db *sqlx.DB, p *PatchPainting) (*Painting, error) {
 
 	var args []any
-
-	/* query := `
-		UPDATE paintings
-		SET name = :name, author = :author, size = :size, price = :price, img_url = :img_url, technique = :technique, last_edited_at = datetime('now', 'utc')
-		WHERE uuid = :uuid
-	    ` */
 
 	query := `
 	UPDATE paintings
@@ -202,8 +178,35 @@ func UpdatePainting(db *sqlx.DB, p *PostPainting) (*Painting, error) {
 		args = append(args, *p.Technique)
 	}
 
+	if p.Description != nil {
+		query += "description = :description, "
+		args = append(args, *p.Description)
+	}
+
+	if p.Position != nil {
+		query += "position = :position, "
+		args = append(args, *p.Position)
+	}
+
+	if p.Sold != nil {
+		query += "sold = :sold, "
+		args = append(args, *p.Sold)
+	}
+
+	if p.Printable != nil {
+		query += "printable = :printable, "
+		args = append(args, *p.Printable)
+	}
+
+	if p.Copiable != nil {
+		query += "copiable = :copiable, "
+		args = append(args, *p.Copiable)
+	}
+
 	query += `last_edited_at = datetime('now', 'utc')
-	WHERE uuid = :uuid`
+	WHERE uuid = :uuid;`
+
+	log.Println("here's the final query:", query)
 
 	result, err := db.NamedExec(query, p)
 	if err != nil {

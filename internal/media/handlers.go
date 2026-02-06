@@ -19,7 +19,7 @@ func create(c *gin.Context) {
 		return
 	}
 
-	filename, err := uploadMedia(c, file)
+	filename, err := UploadImg(c, file)
 	if isError(err, "Failed to save file", http.StatusInternalServerError, c) {
 		return
 	}
@@ -28,19 +28,50 @@ func create(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"img_url": filename})
 }
 
+func update(c *gin.Context) {
+
+	old_url := c.Param("img_url")
+	file, err := c.FormFile("image")
+	if isError(err, "Upload error", http.StatusBadRequest, c) {
+		return
+	}
+
+	filename, err := UploadImg(c, file)
+	if isError(err, "Failed to save new file", http.StatusInternalServerError, c) {
+		return
+	}
+
+	if err := DeleteImg(old_url); isError(err, "Failed to delete old image", http.StatusInternalServerError, c) {
+		DeleteImg(filename)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"img_url": filename})
+
+}
+
 func deleteC(c *gin.Context) {
 
 	err := os.Remove(os.Getenv("DATA_DIR") + "images/cover.jpg")
 	if err != nil {
-		log.Printf("Warning: failed to delete uploaded file: %s", err)
+		log.Printf("Warning: failed to delete uploaded file: %s\n", err)
 	}
 	c.Status(http.StatusAccepted)
+}
+
+func deleteOne(c *gin.Context) {
+	filename := c.Param("img_url")
+	if err := DeleteImg(filename); isError(err, "Failed to delete the image", http.StatusInternalServerError, c) {
+		return
+	}
 }
 
 func InitRoutes(api *gin.RouterGroup) {
 	media := api.Group("/upload")
 
 	media.POST("", auth.AuthMiddleware(), create)
-	media.GET("/delete", deleteC)
+	media.GET("/delete", auth.AuthMiddleware(), deleteC)
+	media.DELETE("/:img_url", deleteOne)
+	media.PUT("/:img_url", auth.AuthMiddleware(), update)
 
 }

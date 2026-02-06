@@ -16,6 +16,9 @@ func generateUUID() string {
 
 // ---------------------------- handler helpers ----------------------------
 func StoI(str string, defalt int) int {
+	if str == "" {
+		return defalt
+	}
 	out, err := strconv.Atoi(str)
 	if err != nil {
 		out = defalt

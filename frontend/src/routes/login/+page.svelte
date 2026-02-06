@@ -10,7 +10,7 @@
             localStorage.setItem("email", email)
             localStorage.setItem("pass", password)
             console.log("successfully logged in")
-            goto("/admin")
+            await goto("/admin")
         } catch (error) {
             console.log("login failed. Retreating")
             alert("Login failed")
