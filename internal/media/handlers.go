@@ -69,7 +69,7 @@ func deleteOne(c *gin.Context) {
 func InitRoutes(api *gin.RouterGroup) {
 	media := api.Group("/upload")
 
-	media.POST("", auth.AuthMiddleware(), create)
+	media.POST("/", auth.AuthMiddleware(), create)
 	media.GET("/delete", deleteC)
 	media.DELETE("/:img_url", auth.AuthMiddleware(), deleteOne)
 	media.PUT("/:img_url", auth.AuthMiddleware(), update)
