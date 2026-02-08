@@ -25,10 +25,21 @@
                     class="aspect-square object-contain"
                     alt={painting.name}
                 />
-                <div class="flex flex-col gap-1 p-3 pt-1">
-                    <h1 class="pb-2">{painting.name}, {painting.size}, {painting.technique}</h1>
+                <div class="flex flex-col p-3 pt-1">
+                    <h1 class="pb-2">{painting.name}, {painting.size}</h1>
+                    <h2>{painting.technique}</h2>
                     <h2>{painting.author}</h2>
-                    <h2>Price: {painting.price} €</h2>
+                    {#if painting.sold}
+                        <h3>Price: Sold!</h3>
+                    {:else}
+                        <h3>Price: {painting.price} €</h3>
+                    {/if}
+                    {#if painting.printable}
+                        <h3>Prints available!</h3>
+                    {/if}
+                    {#if painting.copiable}
+                        <h3>Copies available!</h3>
+                    {/if}
                 </div>
             </div>
         {/each}
@@ -42,5 +53,8 @@
     }
     h2 {
         font-size: 1.1rem;
+    }
+    h3 {
+        font-size: 0.9rem;
     }
 </style>

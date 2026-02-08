@@ -97,17 +97,17 @@ func GetPaintingWithFilter(db *sqlx.DB, filters *Filter) (*[]Painting, error) {
 		}
 	}
 
-	if filters.Sold != -1 {
+	if filters.Sold != false {
 		query += " AND sold = ?"
 		args = append(args, filters.Sold)
 	}
 
-	if filters.Printable != -1 {
+	if filters.Printable != false {
 		query += " AND printable = ?"
 		args = append(args, filters.Printable)
 	}
 
-	if filters.Copiable != -1 {
+	if filters.Copiable != false {
 		query += " AND copiable = ?"
 		args = append(args, filters.Copiable)
 	}

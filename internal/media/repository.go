@@ -32,6 +32,9 @@ func UploadImg(c *gin.Context, file *multipart.FileHeader) (string, error) {
 
 func DeleteImg(filename string) error {
 
+	if filename == "" {
+		return fmt.Errorf("No image url uploaded")
+	}
 	err := os.Remove(os.Getenv("DATA_DIR") + "images/" + filename)
 	if err != nil {
 		return fmt.Errorf("Warning: failed to delete uploaded file: %s", err)

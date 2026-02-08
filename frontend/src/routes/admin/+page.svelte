@@ -24,17 +24,6 @@
         copiable: false
     }
 
-    const fields: Array<{
-        key: keyof typeof form // This tells TS the key must be a valid form property
-        label: string
-    }> = [
-        { key: "name", label: "Painting's name" },
-        { key: "author", label: "Your name" },
-        { key: "size", label: "Painting's size" },
-        { key: "price", label: "Price" },
-        { key: "technique", label: "Techniques used" },
-        { key: "description", label: "Description for the paniting" }
-    ]
     /* ===================================
                Helper functions
     ====================================*/
@@ -59,9 +48,9 @@
             img_url: painting.img_url,
             technique: painting.technique,
             description: painting.description,
-            sold: painting.sold === 1,
-            printable: painting.printable === 1,
-            copiable: painting.copiable === 1,
+            sold: painting.sold,
+            printable: painting.printable,
+            copiable: painting.copiable,
             image: undefined
         }
     }
@@ -113,20 +102,33 @@
     }
 
     async function modalSubmit() {
+        console.log("here we go")
+        console.log(form)
         // Uploading the image
         const photoData = new FormData()
 
         if (form.image && form.image.length > 0) {
             photoData.append("image", form.image[0])
             try {
-                let res = await axios.put(`api/upload/${updated.img_url}`, photoData, {
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                        email: localStorage.getItem("email"),
-                        pass: localStorage.getItem("pass")
-                    }
-                })
-                form.img_url = res?.data?.img_url ?? null
+                if (editing) {
+                    let res = await axios.put(`api/upload/${updated.img_url}`, photoData, {
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                            email: localStorage.getItem("email"),
+                            pass: localStorage.getItem("pass")
+                        }
+                    })
+                    form.img_url = res?.data?.img_url ?? null
+                } else {
+                    let res = await axios.post("api/upload/", photoData, {
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                            email: localStorage.getItem("email"),
+                            pass: localStorage.getItem("pass")
+                        }
+                    })
+                    form.img_url = res?.data?.img_url ?? null
+                }
                 if (form.img_url === "cover.jpg") {
                     alert("successfully changed cover image")
                     return
@@ -136,16 +138,21 @@
                 console.log(error)
                 form.img_url = null
             }
+        } else if (!editing) {
+            alert("Please upload an image")
+            return
         }
         form.image = undefined
 
-        //// changes
+        // uploading the painting
+        console.log("Is this even working?")
+        console.log(form)
 
         try {
             if (editing) {
                 await axios.patch(
                     `api/paintings/${updated.uuid}`,
-                    { form },
+                    { ...form },
                     {
                         headers: {
                             email: localStorage.getItem("email"),
@@ -154,9 +161,10 @@
                     }
                 )
             } else {
+                console.log("does it go here??")
                 await axios.post(
                     "api/paintings",
-                    { form },
+                    { ...form },
                     {
                         headers: {
                             email: localStorage.getItem("email"),
@@ -165,18 +173,19 @@
                     }
                 )
             }
-            alert("Uploaded the painting successfully!")
         } catch (error) {
             console.log(error)
             alert("Failed to upload painting. Please try again.")
             await axios.delete(`api/upload/${form.img_url}`)
         }
 
-        //// cleanup
+        // cleanup
         // TODO: could make this more efficient
         await invalidateAll()
         alert("Uploaded the painting successfully!")
         form = resetForm()
+        showModal = false
+        editing = false
     }
 </script>
 
@@ -196,6 +205,21 @@
                     <p>Size: {painting.size}</p>
                     <p>Price: {painting.price}</p>
                     <p>Technique: {painting.technique}</p>
+                    <div class="flex gap-2">
+                        <p>Description:</p>
+                        <p>{painting.description}</p>
+                    </div>
+                    <div class="flex flex-col">
+                        {#if painting.sold}
+                            <p style="color: green;">This painting was sold!</p>
+                        {/if}
+                        {#if painting.copiable}
+                            <p style="color: green;">This painting can be copied!</p>
+                        {/if}
+                        {#if painting.printable}
+                            <p style="color: green;">This painting can be printed!</p>
+                        {/if}
+                    </div>
                 </div>
                 <div class="grow"></div>
                 <div class="mr-5 flex items-center gap-3">
@@ -216,6 +240,9 @@
         >
     </div>
 </div>
+
+<!-- edit/create modal here -->
+
 {#if showModal}
     <div
         class="fixed top-0 right-0 bottom-0 left-0 z-60 m-auto flex flex-col items-center justify-center gap-2 bg-white"
@@ -224,13 +251,71 @@
             on:click={() => (showModal = false)}
             class="absolute top-8 right-24 h-8 w-8 rounded-full bg-red-600 text-white">X</button
         >
-        {#each fields as field}
-            <label for={field.key}>{field.label}</label>
-            <input bind:value={form[field.key]} name={field.key} id={field.key} />
-        {/each}
+        <label for="name">Painting's name</label>
+        <input bind:value={form["name"]} class="text-input" name="name" id="name" />
+
+        <label for="author">Painting's author</label>
+        <input bind:value={form["author"]} class="text-input" name="author" id="author" />
+
+        <label for="size">Painting's size</label>
+        <input bind:value={form["size"]} class="text-input" name="size" id="size" />
+
+        <label for="price">Painting's price</label>
+        <input
+            type="number"
+            min="0"
+            bind:value={form["price"]}
+            name="price"
+            id="price"
+            class="no-spinner text-input"
+        />
+
+        <label for="technique">Painting's technique</label>
+        <input bind:value={form["technique"]} class="text-input" name="technique" id="technique" />
+
+        <label for="description">A description for the painting!</label>
+        <textarea
+            bind:value={form["description"]}
+            name="description"
+            id="description"
+            class="text-input"
+        ></textarea>
+
+        <div class="flex gap-5">
+            <div class="flex">
+                <label for="sold">Sold: </label>
+                <input
+                    bind:checked={form["sold"]}
+                    class="m-1"
+                    type="checkbox"
+                    name="sold"
+                    id="sold"
+                />
+            </div>
+            <div class="flex">
+                <label for="copiable">Can copy: </label>
+                <input
+                    bind:checked={form["copiable"]}
+                    class="m-1"
+                    type="checkbox"
+                    name="copiable"
+                    id="copiable"
+                />
+            </div>
+            <div class="flex">
+                <label for="printable">Can print: </label>
+                <input
+                    bind:checked={form["printable"]}
+                    class="m-1"
+                    type="checkbox"
+                    name="printable"
+                    id="printable"
+                />
+            </div>
+        </div>
 
         <label for="photo">Photo used for the cover</label>
-        <input bind:files={form.image} type="file" name="photo" id="photo" />
+        <input bind:files={form.image} class="text-input" type="file" name="photo" id="photo" />
 
         <button on:click={() => modalSubmit()} class="rounded-xl bg-green-300 p-3"
             >Upload painting</button
@@ -238,22 +323,8 @@
     </div>
 {/if}
 
-<!--
-type Painting struct {
-	ID				int			`db:"id" json:"-"`
-    UUID        	string    	`db:"uuid" json:"uuid"`
-    Name        	string    	`db:"name" json:"name"`
-    Author			string		`db:"author" json:"author"`
-    Size        	string    	`db:"size" json:"size"`
-	Price			int			`db:"price" json:"price"`
-    ImgURL      	string    	`db:"img_url" json:"img_url"`
-    Technique   	string    	`db:"technique" json:"technique"`
-    UploadedAt  	time.Time   `db:"uploaded_at" json:"uploaded_at"`
-    LastEditedAt 	time.Time   `db:"last_edited_at" json:"last_edited_at"`
--->
-
 <style>
-    input {
+    .text-input {
         margin-bottom: 4px;
         width: 20rem;
         border: 1px solid;
@@ -263,5 +334,15 @@ type Painting struct {
         font-size: 4rem;
         padding-top: 20px;
         padding-bottom: 40px;
+    }
+
+    .no-spinner::-webkit-outer-spin-button,
+    .no-spinner::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    .no-spinner {
+        -moz-appearance: textfield;
+        appearance: textfield;
     }
 </style>

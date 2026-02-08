@@ -7,9 +7,9 @@ type Filter struct {
 	Sizes      []string
 	PriceRange [2]int
 	Techniques []string
-	Sold       int
-	Printable  int
-	Copiable   int
+	Sold       bool
+	Printable  bool
+	Copiable   bool
 	OrderBy    string
 	Limit      int
 	Offset     int
@@ -26,9 +26,9 @@ type Painting struct {
 	Technique    string    `db:"technique" json:"technique"`
 	Description  string    `db:"description" json:"description"`
 	Position     int       `db:"position" json:"position"`
-	Sold         int       `db:"sold" json:"sold"`
-	Printable    int       `db:"printable" json:"printable"`
-	Copiable     int       `db:"copiable" json:"copiable"`
+	Sold         bool      `db:"sold" json:"sold"`
+	Printable    bool      `db:"printable" json:"printable"`
+	Copiable     bool      `db:"copiable" json:"copiable"`
 	UploadedAt   time.Time `db:"uploaded_at" json:"uploaded_at"`
 	LastEditedAt time.Time `db:"last_edited_at" json:"last_edited_at"`
 }
@@ -43,7 +43,7 @@ type PatchPainting struct {
 	Technique   *string `db:"technique" json:"technique"`
 	Description *string `db:"description" json:"description"`
 	Position    *int    `db:"position" json:"position"`
-	Sold        *int    `db:"sold" json:"sold"`
-	Printable   *int    `db:"printable" json:"printable"`
-	Copiable    *int    `db:"copiable" json:"copiable"`
+	Sold        *bool   `db:"sold" json:"sold"`
+	Printable   *bool   `db:"printable" json:"printable"`
+	Copiable    *bool   `db:"copiable" json:"copiable"`
 }

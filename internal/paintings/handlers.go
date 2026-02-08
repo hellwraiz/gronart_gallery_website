@@ -21,6 +21,7 @@ func (h *DBHandler) create(c *gin.Context) {
 	if err := c.BindJSON(&painting); isError(err, "JSON error", http.StatusBadRequest, c) {
 		return
 	}
+	log.Printf("Here's what I got %+v", painting)
 	if err := CreatePainting(db, &painting); isError(err, "DB error", http.StatusInternalServerError, c) {
 		return
 	}
@@ -46,9 +47,10 @@ func (h *DBHandler) getFiltered(c *gin.Context) {
 		priceRange = [2]int{-1, -1}
 	}
 
-	sold := StoI(soldStr, -1)
-	printable := StoI(printableStr, -1)
-	copiable := StoI(copiableStr, -1)
+	// TODO: improve how data is handled, and the type of data
+	sold := StoB(soldStr, false)
+	printable := StoB(printableStr, false)
+	copiable := StoB(copiableStr, false)
 	limit := StoI(limitStr, -1)
 	offset := StoI(offsetStr, -1)
 
@@ -96,6 +98,7 @@ func (h *DBHandler) patch(c *gin.Context) {
 	if err := c.ShouldBindJSON(&painting); isError(err, "JSON error", http.StatusBadRequest, c) {
 		return
 	}
+	log.Printf("This is mostly for testing %v", painting)
 	painting.UUID = uuid
 	newPainting, err := UpdatePainting(db, &painting)
 	if isError(err, "DB error", http.StatusInternalServerError, c) {
