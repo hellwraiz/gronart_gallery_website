@@ -1,11 +1,10 @@
 <script lang="ts">
     import "./app.css"
-    import favicon from "$lib/assets/favicon.ico"
 
     let { children } = $props()
 </script>
 
-<svelte:head><link rel="icon" href={favicon} /></svelte:head>
+<svelte:head><link rel="icon" href="/favicon.png" /></svelte:head>
 <header class="sticky top-0 z-50 w-full bg-gray-200 px-surround py-8 shadow-xl">
     <div class="mx-auto flex max-w-content items-center gap-10 text-2xl">
         <a href="/" class="w-28">

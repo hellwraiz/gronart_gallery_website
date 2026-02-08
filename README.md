@@ -1,6 +1,11 @@
 # gronart-galery-website
 Hi! This is a website that I made for my mother, who has her own gallery. Enjoy!
 
+# TODOs
+
+1. Cleanup price still showing when painting is indicated as sold
+2. 404 page
+
 # Project structure
 More so for me than anyone. But if you're curious about the login behind the code then here's the place!
 

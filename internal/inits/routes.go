@@ -25,10 +25,12 @@ func InitRoutes(db *sqlx.DB) (*gin.Engine, error) {
 	router.NoRoute(func(c *gin.Context) {
 		c.File("./frontend/build/index.html")
 	})
+	router.Static("/assets", "./frontend/build/assets")
 	router.StaticFile("/robots.txt", "./frontend/build/robots.txt")
 	router.StaticFile("/favicon.png", "./frontend/build/favicon.png")
 	// These ones are just to expose the data folder to the frontend though
 	router.Static("/images", os.Getenv("DATA_DIR")+"images")
+	// Here are all the static files though
 
 	//// Initiating the api routes
 	api := router.Group("/api")

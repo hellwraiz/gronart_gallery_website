@@ -70,8 +70,8 @@ func InitRoutes(api *gin.RouterGroup) {
 	media := api.Group("/upload")
 
 	media.POST("", auth.AuthMiddleware(), create)
-	media.GET("/delete", auth.AuthMiddleware(), deleteC)
-	media.DELETE("/:img_url", deleteOne)
+	media.GET("/delete", deleteC)
+	media.DELETE("/:img_url", auth.AuthMiddleware(), deleteOne)
 	media.PUT("/:img_url", auth.AuthMiddleware(), update)
 
 }

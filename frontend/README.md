@@ -1,38 +1,11 @@
-# sv
+# Things to watch out for
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+## Sizing
 
-## Creating a project
+Make sure that your design is responsive of the device that opens it! A good indicator is the breakpoints that tailwind uses.
 
-If you're seeing this, you've probably already done this step. Congrats!
-
-```sh
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+sm:  640px   (small tablets, landscape phones)
+md:  768px   (tablets)
+lg:  1024px  (laptops)
+xl:  1280px  (desktops)
+2xl: 1536px  (large desktops)

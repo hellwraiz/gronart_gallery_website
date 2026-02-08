@@ -1,5 +1,6 @@
-<script>
-    export let data
+<script lang="ts">
+    import type { PageData } from "./$types"
+    export let data: PageData
     let paintings = data.paintings
 </script>
 
@@ -17,14 +18,16 @@
 </div>
 
 <div class="w-full px-surround">
-    <div class="mx-auto grid max-w-content grid-cols-4 gap-2.5 pt-6">
+    <div class="mx-auto grid max-w-content grid-cols-1 gap-2.5 pt-6 lg:grid-cols-4">
         {#each paintings as painting}
             <div class="flex flex-col justify-between">
-                <img
-                    src={"/images/" + painting.img_url}
-                    class="aspect-square object-contain hover:opacity-15"
-                    alt={painting.name}
-                />
+                <a href="/{painting.uuid}">
+                    <img
+                        src={"/images/" + painting.img_url}
+                        class="aspect-square cursor-pointer object-contain transition-opacity hover:brightness-90"
+                        alt={"Painting: " + painting.name}
+                    />
+                </a>
                 <div class="flex flex-col p-3 pt-1">
                     <h1 class="pb-2">{painting.name}, {painting.size}</h1>
                     <h2>{painting.technique}</h2>

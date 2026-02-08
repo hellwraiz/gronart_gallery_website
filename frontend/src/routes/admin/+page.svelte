@@ -5,7 +5,8 @@
     import { invalidateAll } from "$app/navigation"
     import type { FormPainting, Painting } from "$lib/types"
     import axios from "axios"
-    export let data
+    import type { PageData } from "./$types"
+    export let data: PageData
     let showModal = false
     let editing = false
     let updated: Painting
@@ -102,8 +103,6 @@
     }
 
     async function modalSubmit() {
-        console.log("here we go")
-        console.log(form)
         // Uploading the image
         const photoData = new FormData()
 
@@ -145,9 +144,6 @@
         form.image = undefined
 
         // uploading the painting
-        console.log("Is this even working?")
-        console.log(form)
-
         try {
             if (editing) {
                 await axios.patch(
@@ -161,7 +157,6 @@
                     }
                 )
             } else {
-                console.log("does it go here??")
                 await axios.post(
                     "api/paintings",
                     { ...form },
@@ -203,7 +198,7 @@
                     <p>Name: {painting.name}</p>
                     <p>Author: {painting.author}</p>
                     <p>Size: {painting.size}</p>
-                    <p>Price: {painting.price}</p>
+                    <p>Price: {painting.sold ? "n/a" : painting.price}</p>
                     <p>Technique: {painting.technique}</p>
                     <div class="flex gap-2">
                         <p>Description:</p>
@@ -225,18 +220,19 @@
                 <div class="mr-5 flex items-center gap-3">
                     <button
                         on:click={() => showEditModal(painting)}
-                        class="min-w-20 rounded-xl bg-blue-400 p-3">Edit</button
+                        class="min-w-20 cursor-pointer rounded-xl bg-blue-400 p-3">Edit</button
                     >
                     <button
                         on:click={() => deletePainting(painting.uuid)}
-                        class="min-w-20 rounded-xl bg-red-400 p-3">Delete</button
+                        class="min-w-20 cursor-pointer rounded-xl bg-red-400 p-3">Delete</button
                     >
                 </div>
             </div>
         {/each}
         <button
             on:click={() => (showModal = true)}
-            class="mt-6 mb-10 w-40 self-center rounded-xl bg-green-300 p-3">Upload Painting</button
+            class="mt-6 mb-10 w-40 cursor-pointer self-center rounded-xl bg-green-300 p-3"
+            >Upload Painting</button
         >
     </div>
 </div>
@@ -249,16 +245,17 @@
     >
         <button
             on:click={() => (showModal = false)}
-            class="absolute top-8 right-24 h-8 w-8 rounded-full bg-red-600 text-white">X</button
+            class="absolute top-8 right-24 h-8 w-8 cursor-pointer rounded-full bg-red-600 text-white"
+            >X</button
         >
         <label for="name">Painting's name</label>
-        <input bind:value={form["name"]} class="text-input" name="name" id="name" />
+        <input bind:value={form["name"]} required class="text-input" name="name" id="name" />
 
         <label for="author">Painting's author</label>
-        <input bind:value={form["author"]} class="text-input" name="author" id="author" />
+        <input bind:value={form["author"]} required class="text-input" name="author" id="author" />
 
         <label for="size">Painting's size</label>
-        <input bind:value={form["size"]} class="text-input" name="size" id="size" />
+        <input bind:value={form["size"]} required class="text-input" name="size" id="size" />
 
         <label for="price">Painting's price</label>
         <input
@@ -268,14 +265,23 @@
             name="price"
             id="price"
             class="no-spinner text-input"
+            disabled={form.sold}
+            required={!form.sold}
         />
 
         <label for="technique">Painting's technique</label>
-        <input bind:value={form["technique"]} class="text-input" name="technique" id="technique" />
+        <input
+            bind:value={form["technique"]}
+            required
+            class="text-input"
+            name="technique"
+            id="technique"
+        />
 
         <label for="description">A description for the painting!</label>
         <textarea
             bind:value={form["description"]}
+            required
             name="description"
             id="description"
             class="text-input"
@@ -315,9 +321,16 @@
         </div>
 
         <label for="photo">Photo used for the cover</label>
-        <input bind:files={form.image} class="text-input" type="file" name="photo" id="photo" />
+        <input
+            bind:files={form.image}
+            required
+            class="text-input"
+            type="file"
+            name="photo"
+            id="photo"
+        />
 
-        <button on:click={() => modalSubmit()} class="rounded-xl bg-green-300 p-3"
+        <button on:click={() => modalSubmit()} class="cursor-pointer rounded-xl bg-green-300 p-3"
             >Upload painting</button
         >
     </div>
@@ -344,5 +357,10 @@
     .no-spinner {
         -moz-appearance: textfield;
         appearance: textfield;
+    }
+
+    input:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
     }
 </style>
