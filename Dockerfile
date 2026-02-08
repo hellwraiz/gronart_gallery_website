@@ -20,6 +20,7 @@ RUN go build -v -o run-app .
 FROM debian:bookworm
 WORKDIR /app
 COPY --from=go-builder /build/run-app /usr/local/bin/
+COPY --from=go-builder /build/migrations ./migrations
 COPY --from=go-builder /build/frontend/build ./frontend/build
 EXPOSE 8080
 CMD ["run-app"]

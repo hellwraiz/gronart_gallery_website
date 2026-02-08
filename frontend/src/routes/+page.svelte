@@ -22,7 +22,7 @@
             <div class="flex flex-col justify-between">
                 <img
                     src={"/images/" + painting.img_url}
-                    class="aspect-square object-contain"
+                    class="aspect-square object-contain hover:opacity-15"
                     alt={painting.name}
                 />
                 <div class="flex flex-col p-3 pt-1">
