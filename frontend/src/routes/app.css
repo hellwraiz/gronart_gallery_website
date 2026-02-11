@@ -2,5 +2,8 @@
 
 @theme {
     --spacing-content: 1400px;
-    --spacing-surround: 128px;
+    --spacing-surround: 192px;
+    --spacing-surround-phone: 32px;
 }
+
+

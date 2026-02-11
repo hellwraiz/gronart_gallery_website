@@ -188,11 +188,11 @@
     <div class="flex w-225 flex-col">
         <h1>Admin Panel</h1>
         {#each data.paintings as painting}
-            <div class="m-1.5 flex w-full gap-4 border p-0.5">
+            <div class="m-1.5 flex w-full items-center gap-4 border p-0.5">
                 <img
                     src={"/images/" + painting.img_url}
                     alt={painting.name}
-                    class="h-72 w-72 object-cover object-center"
+                    class="h-48 w-48 object-cover object-center"
                 />
                 <div class="flex flex-col justify-center gap-1 pt-1">
                     <p>Name: {painting.name}</p>
