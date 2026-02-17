@@ -28,9 +28,10 @@
     }
 
     function getThumbnailUrl(imgUrl: string) {
-        const ext = imgUrl.substring(imgUrl.lastIndexOf("."))
         const name = imgUrl.substring(0, imgUrl.lastIndexOf("."))
-        return `/images/${name}_thumb${ext}`
+
+        // Thumbnails are always jpg unless png
+        return `/images/${name}_thumb.jpg`
     }
 
     function updateVisibleCount() {

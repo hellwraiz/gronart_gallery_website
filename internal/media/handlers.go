@@ -21,6 +21,9 @@ func create(c *gin.Context) {
 	if isError(err, "Upload error", http.StatusBadRequest, c) {
 		return
 	}
+	if err = validateImg(file); isError(err, "Upload error", http.StatusBadRequest, c) {
+		return
+	}
 
 	filename, err := UploadPaintingImg(c, file)
 	if isError(err, "Failed to save file", http.StatusInternalServerError, c) {
@@ -36,6 +39,9 @@ func update(c *gin.Context) {
 	old_url := c.Param("img_url")
 	file, err := c.FormFile("image")
 	if isError(err, "Upload error", http.StatusBadRequest, c) {
+		return
+	}
+	if err = validateImg(file); isError(err, "Upload error", http.StatusBadRequest, c) {
 		return
 	}
 
@@ -67,6 +73,9 @@ func (h *DBHandler) uploadC(c *gin.Context) {
 	if isError(err, "Upload error", http.StatusBadRequest, c) {
 		return
 	}
+	if err = validateImg(file); isError(err, "Upload error", http.StatusBadRequest, c) {
+		return
+	}
 	filename, err := UploadSiteImg(c, db, "cover", file)
 	if isError(err, "DB error", http.StatusInternalServerError, c) {
 		return
@@ -86,12 +95,15 @@ func (h *DBHandler) deleteC(c *gin.Context) {
 
 func (h *DBHandler) updateC(c *gin.Context) {
 	db := h.db
-	if err := DeleteSiteImg(c, db, "cover.jpg"); isError(err, "Warning: Failed to delete the cover", http.StatusInternalServerError, c) {
-		return
-	}
 
 	file, err := c.FormFile("image")
 	if isError(err, "Upload error", http.StatusBadRequest, c) {
+		return
+	}
+	if err = validateImg(file); isError(err, "Upload error", http.StatusBadRequest, c) {
+		return
+	}
+	if err := DeleteSiteImg(c, db, "cover.jpg"); isError(err, "Warning: Failed to delete the cover", http.StatusInternalServerError, c) {
 		return
 	}
 	filename, err := UploadSiteImg(c, db, "cover", file)
@@ -112,8 +124,8 @@ func InitRoutes(db *sqlx.DB, api *gin.RouterGroup) {
 	media.PUT("/:img_url", auth.AuthMiddleware(), update)
 
 	// cover image crud
-	media.POST("/cover/", auth.AuthMiddleware(), h.uploadC)
-	media.DELETE("/cover/", h.deleteC)
-	media.PUT("/cover/", auth.AuthMiddleware(), h.updateC)
+	media.POST("/cover", auth.AuthMiddleware(), h.uploadC)
+	media.DELETE("/cover", h.deleteC)
+	media.PUT("/cover", auth.AuthMiddleware(), h.updateC)
 
 }

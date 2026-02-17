@@ -20,6 +20,9 @@ func InitRoutes(db *sqlx.DB) (*gin.Engine, error) {
 		router.SetTrustedProxies(nil)
 	}
 
+	// some other gin settings
+	router.MaxMultipartMemory = 8 << 20 // 8MB max
+
 	// Setting up the static routes to be used to server frontend build files
 	router.Static("/_app", "./frontend/build/_app")
 	router.NoRoute(func(c *gin.Context) {

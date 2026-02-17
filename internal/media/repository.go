@@ -2,17 +2,14 @@ package media
 
 import (
 	"fmt"
-	"image"
-	"image/jpeg"
-	"image/png"
 	"mime/multipart"
+	"net/http"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
-	"github.com/nfnt/resize"
 )
 
 func UploadPaintingImg(c *gin.Context, file *multipart.FileHeader) (string, error) {
@@ -30,44 +27,8 @@ func UploadPaintingImg(c *gin.Context, file *multipart.FileHeader) (string, erro
 		return "", err
 	}
 
-	// Open image
-	f, err := os.Open(uploadPath)
-	if err != nil {
-		DeleteImg(filename)
-		return "", fmt.Errorf("Thumbnail err: %s", err)
-	}
-	defer f.Close()
-
-	// Resize the image
-	img, format, err := image.Decode(f)
-	if err != nil {
-		DeleteImg(filename)
-		return "", fmt.Errorf("Thumbnail err: %s", err)
-	}
-	thumbnail := resize.Resize(400, 0, img, resize.Lanczos3)
-
-	// Converting and saving thumbnail to disk
-	uploadPath = os.Getenv("DATA_DIR") + "images/" + thumbName
-	out, err := os.Create(uploadPath)
-	if err != nil {
-		DeleteImg(filename)
-		out.Close()
-		return "", fmt.Errorf("Thumbnail err: %s", err)
-	}
-	defer out.Close()
-
-	if format == "png" {
-		err = png.Encode(out, thumbnail)
-		if err != nil {
-			DeleteImg(filename)
-			return "", fmt.Errorf("Thumbnail err: %s", err)
-		}
-	} else {
-		err = jpeg.Encode(out, thumbnail, &jpeg.Options{Quality: 85})
-		if err != nil {
-			DeleteImg(filename)
-			return "", fmt.Errorf("Thumbnail err: %s", err)
-		}
+	if err := CreateThumbnailForFile(uploadPath, os.Getenv("DATA_DIR")+"images/"+thumbName); isError(err, "Failed to create thumbnail", http.StatusInternalServerError, c) {
+		return "", err
 	}
 
 	return filename, nil
