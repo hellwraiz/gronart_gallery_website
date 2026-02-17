@@ -2,12 +2,15 @@ package media
 
 import (
 	"gronart_gallery_website/internal/auth"
-	"log"
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
 )
+
+type DBHandler struct {
+	db *sqlx.DB
+}
 
 // Allow the frontend to upload media
 // Pls don't exploit these issues 🙏
@@ -19,7 +22,7 @@ func create(c *gin.Context) {
 		return
 	}
 
-	filename, err := UploadImg(c, file)
+	filename, err := UploadPaintingImg(c, file)
 	if isError(err, "Failed to save file", http.StatusInternalServerError, c) {
 		return
 	}
@@ -36,7 +39,7 @@ func update(c *gin.Context) {
 		return
 	}
 
-	filename, err := UploadImg(c, file)
+	filename, err := UploadPaintingImg(c, file)
 	if isError(err, "Failed to save new file", http.StatusInternalServerError, c) {
 		return
 	}
@@ -50,15 +53,6 @@ func update(c *gin.Context) {
 
 }
 
-func deleteC(c *gin.Context) {
-
-	err := os.Remove(os.Getenv("DATA_DIR") + "images/cover.jpg")
-	if err != nil {
-		log.Printf("Warning: failed to delete uploaded file: %s\n", err)
-	}
-	c.Status(http.StatusAccepted)
-}
-
 func deleteOne(c *gin.Context) {
 	filename := c.Param("img_url")
 	if err := DeleteImg(filename); isError(err, "Failed to delete the image", http.StatusInternalServerError, c) {
@@ -66,12 +60,60 @@ func deleteOne(c *gin.Context) {
 	}
 }
 
-func InitRoutes(api *gin.RouterGroup) {
+func (h *DBHandler) uploadC(c *gin.Context) {
+	db := h.db
+
+	file, err := c.FormFile("image")
+	if isError(err, "Upload error", http.StatusBadRequest, c) {
+		return
+	}
+	filename, err := UploadSiteImg(c, db, "cover", file)
+	if isError(err, "DB error", http.StatusInternalServerError, c) {
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"cover_url": filename})
+
+}
+
+func (h *DBHandler) deleteC(c *gin.Context) {
+	db := h.db
+
+	if err := DeleteSiteImg(c, db, "cover.jpg"); isError(err, "Warning: Failed to delete the cover", http.StatusInternalServerError, c) {
+		return
+	}
+	c.Status(http.StatusAccepted)
+}
+
+func (h *DBHandler) updateC(c *gin.Context) {
+	db := h.db
+	if err := DeleteSiteImg(c, db, "cover.jpg"); isError(err, "Warning: Failed to delete the cover", http.StatusInternalServerError, c) {
+		return
+	}
+
+	file, err := c.FormFile("image")
+	if isError(err, "Upload error", http.StatusBadRequest, c) {
+		return
+	}
+	filename, err := UploadSiteImg(c, db, "cover", file)
+	if isError(err, "DB error", http.StatusInternalServerError, c) {
+		return
+	}
+	c.JSON(http.StatusAccepted, gin.H{"cover_url": filename})
+}
+
+func InitRoutes(db *sqlx.DB, api *gin.RouterGroup) {
 	media := api.Group("/upload")
 
+	h := DBHandler{db: db}
+
+	// paniting image crud
 	media.POST("/", auth.AuthMiddleware(), create)
-	media.GET("/delete", deleteC)
 	media.DELETE("/:img_url", auth.AuthMiddleware(), deleteOne)
 	media.PUT("/:img_url", auth.AuthMiddleware(), update)
+
+	// cover image crud
+	media.POST("/cover/", auth.AuthMiddleware(), h.uploadC)
+	media.DELETE("/cover/", h.deleteC)
+	media.PUT("/cover/", auth.AuthMiddleware(), h.updateC)
 
 }

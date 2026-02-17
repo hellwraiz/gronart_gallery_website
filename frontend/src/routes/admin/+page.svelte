@@ -31,13 +31,13 @@
 
     /* function getChangedFields(original: Painting, modified: Painting) {
         const changes: Partial<Painting> = {};
-        
+
         for (const key in modified) {
             if (modified[key] !== original[key]) {
                 changes[key] = modified[key];
             }
         }
-        
+
         return changes;
     } */
     function paintingToForm(painting: Painting): FormPainting {
@@ -106,6 +106,7 @@
         // Uploading the image
         const photoData = new FormData()
 
+        console.log(photoData)
         if (form.image && form.image.length > 0) {
             photoData.append("image", form.image[0])
             try {
@@ -119,6 +120,11 @@
                     })
                     form.img_url = res?.data?.img_url ?? null
                 } else {
+                    // TODO: remove this crap and put it in a proper place
+                    if (form.img_url === "cover.jpg") {
+                        alert("successfully changed cover image")
+                        return
+                    }
                     let res = await axios.post("api/upload/", photoData, {
                         headers: {
                             "Content-Type": "multipart/form-data",
@@ -127,10 +133,6 @@
                         }
                     })
                     form.img_url = res?.data?.img_url ?? null
-                }
-                if (form.img_url === "cover.jpg") {
-                    alert("successfully changed cover image")
-                    return
                 }
             } catch (error) {
                 alert("Couldn't upload image for painting.")

@@ -14,6 +14,7 @@ func CreatePainting(db *sqlx.DB, p *Painting) error {
 
 	p.UUID = generateUUID()
 
+	// TODO: refactor all code to look like this. Very nice
 	if result, err := db.NamedExec(query, p); err != nil {
 		return fmt.Errorf("Failed to create painting: %s", err)
 	} else if numAffected, errResult := result.RowsAffected(); numAffected == 0 && errResult == nil {

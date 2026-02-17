@@ -36,7 +36,7 @@ func InitRoutes(db *sqlx.DB) (*gin.Engine, error) {
 	api := router.Group("/api")
 
 	paintings.InitRoutes(db, api)
-	media.InitRoutes(api)
+	media.InitRoutes(db, api)
 	auth.InitRoutes(api)
 
 	return router, nil
