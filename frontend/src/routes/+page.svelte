@@ -122,7 +122,7 @@
                 >
                     <img
                         src={getThumbnailUrl(painting.img_url)}
-                        class="aspect-square max-h-120 max-w-80 cursor-pointer self-center object-contain object-center transition-opacity hover:brightness-90 lg:max-h-full lg:max-w-full"
+                        class="aspect-square max-h-120 max-w-80 cursor-pointer self-center object-contain object-center transition-opacity hover:brightness-90 lg:aspect-auto lg:max-h-full lg:max-w-full"
                         alt={"Painting: " + painting.name}
                     />
                 </button>
