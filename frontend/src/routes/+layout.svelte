@@ -1,6 +1,5 @@
 <script lang="ts">
     import "./app.css"
-    import { slide } from "svelte/transition"
 
     let { children } = $props()
     let open = $state(false)
@@ -10,26 +9,28 @@
     <link rel="icon" href="/favicon.png" />
     <title>Grona gallery</title>
 </svelte:head>
-<header>
-    <div class="top-0 z-40 hidden w-full bg-gray-200 px-surround py-8 shadow-xl lg:sticky">
-        <div class="mx-auto flex max-w-content items-center gap-10 text-2xl">
-            <a href="/" class="w-28">
-                <img src="/favicon.png" class="w-28" alt="LOGO" />
-            </a>
-            <a href="/">Home</a>
-            <a href="/">Catalog</a>
-            <!-- <a href="/paintings">Catalog</a> -->
-            <!-- <a href="/paintors">Paintors</a> -->
-            <!-- <a href="/projects">Projects</a> -->
-            <a href="/">Contact</a>
-        </div>
+<header
+    class="top-0 z-40 hidden w-full bg-gray-200 px-surround py-8 shadow-xl lg:sticky lg:inline-block"
+>
+    <div class="mx-auto flex max-w-content items-center gap-10 text-2xl">
+        <a href="/" class="w-28">
+            <img src="/favicon.png" class="w-28" alt="LOGO" />
+        </a>
+        <a href="/">Home</a>
+        <a href="/">Catalog</a>
+        <!-- <a href="/paintings">Catalog</a> -->
+        <!-- <a href="/paintors">Paintors</a> -->
+        <!-- <a href="/projects">Projects</a> -->
+        <a href="/">Contact</a>
     </div>
-    <div class="fixed z-40 lg:hidden">
+</header>
+<header class="lg:hidden">
+    <div class="fixed z-40">
         <button
             onclick={() => {
                 open = !open
             }}
-            class="p-4 lg:hidden"
+            class="p-4"
             aria-label="burger menu"
             disabled={open}
         >
@@ -55,8 +56,8 @@
     ></button>
 
     <div
-        class="fixed top-0 right-0 z-50 h-screen w-64 transform bg-white
-         shadow-xl transition-transform duration-300 ease-out will-change-transform"
+        class="fixed top-0 right-0 z-50 h-screen w-64 transform bg-white shadow-xl
+         transition-transform duration-300 ease-out will-change-transform"
         class:translate-x-0={open}
         class:translate-x-full={!open}
     >
@@ -64,9 +65,9 @@
             <button onclick={() => (open = false)}>Close</button>
 
             <nav class="mt-8 flex flex-col gap-4">
-                <a href="/">Home</a>
-                <a href="/">Catalog</a>
-                <a href="/">Contact</a>
+                <a onclick={() => (open = false)} href="/">Home</a>
+                <a onclick={() => (open = false)} href="/">Catalog</a>
+                <a onclick={() => (open = false)} href="/">Contact</a>
             </nav>
         </div>
     </div>
