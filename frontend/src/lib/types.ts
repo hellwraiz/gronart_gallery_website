@@ -22,17 +22,3 @@ export type FormPainting = Omit<
     image: FileList | undefined
     img_url: string | null
 }
-
-export type FormPaintingg = {
-    name: string
-    author: string
-    size: string
-    price: number
-    image: FileList | undefined
-    img_url: string | null
-    technique: string
-    description: string
-    sold: boolean
-    printable: boolean
-    copiable: boolean
-}

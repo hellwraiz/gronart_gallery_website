@@ -83,6 +83,12 @@
         showModal = true
     }
 
+    async function closeEditModal() {
+        form = resetForm()
+        editing = false
+        showModal = false
+    }
+
     /* ===================================
                CRUD operations
     ====================================*/
@@ -221,18 +227,18 @@
                 <div class="grow"></div>
                 <div class="mr-5 flex items-center gap-3">
                     <button
-                        on:click={() => showEditModal(painting)}
+                        onclick={() => showEditModal(painting)}
                         class="min-w-20 cursor-pointer rounded-xl bg-blue-400 p-3">Edit</button
                     >
                     <button
-                        on:click={() => deletePainting(painting.uuid)}
+                        onclick={() => deletePainting(painting.uuid)}
                         class="min-w-20 cursor-pointer rounded-xl bg-red-400 p-3">Delete</button
                     >
                 </div>
             </div>
         {/each}
         <button
-            on:click={() => (showModal = true)}
+            onclick={() => (showModal = true)}
             class="mt-6 mb-10 w-40 cursor-pointer self-center rounded-xl bg-green-300 p-3"
             >Upload Painting</button
         >
@@ -242,11 +248,16 @@
 <!-- edit/create modal here -->
 
 {#if showModal}
-    <div
+    <form
         class="fixed top-0 right-0 bottom-0 left-0 z-60 m-auto flex flex-col items-center justify-center gap-2 bg-white"
+        onsubmit={(e) => {
+            e.preventDefault()
+            modalSubmit()
+        }}
     >
         <button
-            on:click={() => (showModal = false)}
+            type="button"
+            onclick={() => closeEditModal()}
             class="absolute top-8 right-24 h-8 w-8 cursor-pointer rounded-full bg-red-600 text-white"
             >X</button
         >
@@ -325,17 +336,17 @@
         <label for="photo">Photo used for the cover</label>
         <input
             bind:files={form.image}
-            required
+            required={!editing}
             class="text-input"
             type="file"
             name="photo"
             id="photo"
         />
 
-        <button on:click={() => modalSubmit()} class="cursor-pointer rounded-xl bg-green-300 p-3"
-            >Upload painting</button
-        >
-    </div>
+        <button type="submit" class="cursor-pointer rounded-xl bg-green-300 p-3">
+            Upload painting
+        </button>
+    </form>
 {/if}
 
 <style>

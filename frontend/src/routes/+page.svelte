@@ -53,7 +53,7 @@
 
 {#if currentPainting != null}
     <div class="fixed inset-0 z-50 bg-white px-surround-phone pt-6 lg:px-surround">
-        <div class="mx-auto flex max-w-content flex-col gap-8">
+        <div class="mx-auto flex max-w-content-phone flex-col gap-8 lg:max-w-content">
             <button
                 class="inline-flex w-fit cursor-pointer gap-5 p-3"
                 onclick={() => {
@@ -146,7 +146,7 @@
         {/each}
     </div>
     {#if totalPages > 1}
-        <div class="mx-auto flex max-w-content justify-center py-5">
+        <div class="mx-auto flex max-w-content-phone justify-center py-5 lg:max-w-content">
             <button
                 disabled={currentPage === 1}
                 aria-label="Go to prev page"

@@ -13,6 +13,7 @@ import (
 	"github.com/joho/godotenv"
 	_ "github.com/joho/godotenv"    // gives me access to the .env file values in the app
 	_ "github.com/mattn/go-sqlite3" // so that the database/sql package can use sqlite
+	"github.com/resend/resend-go/v3"
 )
 
 func main() {
@@ -40,4 +41,23 @@ func main() {
 
 	// Starting the server. It automatically gets the environment port variable.
 	router.Run()
+}
+
+// TODO: integrate this properly. This is just an example of how to use it.
+func Main() {
+	client := resend.NewClient(os.Getenv("GIN_MODE"))
+
+	params := &resend.SendEmailRequest{
+		From:    "onboarding@resend.dev",
+		To:      []string{"gallerygrona@gmail.com"},
+		Subject: "Hello World",
+		Html:    "<p>Congrats on sending your <strong>first email</strong>!</p>",
+	}
+
+	sent, err := client.Emails.Send(params)
+	if err != nil {
+		log.Fatalf("failed to send email: %v", err)
+	}
+
+	log.Printf("email sent: %s", sent.Id)
 }

@@ -21,7 +21,7 @@
         <!-- <a href="/paintings">Catalog</a> -->
         <!-- <a href="/paintors">Paintors</a> -->
         <!-- <a href="/projects">Projects</a> -->
-        <a href="/">Contact</a>
+        <a href="/contact">Contact</a>
     </div>
 </header>
 <header class="lg:hidden">
@@ -67,7 +67,7 @@
             <nav class="mt-8 flex flex-col gap-4">
                 <a onclick={() => (open = false)} href="/">Home</a>
                 <a onclick={() => (open = false)} href="/">Catalog</a>
-                <a onclick={() => (open = false)} href="/">Contact</a>
+                <a onclick={() => (open = false)} href="/contact">Contact</a>
             </nav>
         </div>
     </div>
