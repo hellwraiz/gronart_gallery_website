@@ -11,6 +11,7 @@
             localStorage.setItem("pass", password)
             console.log("successfully logged in")
             await goto("/admin")
+            console.log("You should be at the page now??")
         } catch (error) {
             console.log("login failed. Retreating")
             alert("Login failed")

@@ -5,13 +5,14 @@
     import { invalidateAll } from "$app/navigation"
     import type { FormPainting, Painting } from "$lib/types"
     import axios from "axios"
-    import type { PageData } from "./$types"
-    export let data: PageData
-    let showModal = false
-    let editing = false
+    let { data } = $props()
+    let showModal = $state(false)
+    let editing = $state(false)
     let updated: Painting
+    let paintingElements: HTMLDivElement[] = []
+    let cursorY = $state(0)
 
-    let form: FormPainting = {
+    let form: FormPainting = $state({
         name: "",
         author: "",
         size: "",
@@ -23,23 +24,18 @@
         sold: false,
         printable: false,
         copiable: false
-    }
+    })
+
+    // All the dragging stuff
+    let sourcePosition = $state(0)
+    let targetPosition = $state(0)
+    let isDragging = $state(false)
+    let shadowHeight = $state(0)
 
     /* ===================================
                Helper functions
     ====================================*/
 
-    /* function getChangedFields(original: Painting, modified: Painting) {
-        const changes: Partial<Painting> = {};
-
-        for (const key in modified) {
-            if (modified[key] !== original[key]) {
-                changes[key] = modified[key];
-            }
-        }
-
-        return changes;
-    } */
     function paintingToForm(painting: Painting): FormPainting {
         return {
             name: painting.name,
@@ -92,6 +88,20 @@
     /* ===================================
                CRUD operations
     ====================================*/
+
+    async function movePainting() {
+        if (sourcePosition === targetPosition - 1) {
+            console.log("painting not moved. Skipping")
+            return
+        }
+        if (sourcePosition > targetPosition) {
+            console.log("Moving painting " + sourcePosition + " to position " + targetPosition)
+        } else {
+            console.log(
+                "Moving painting " + sourcePosition + " to position " + (targetPosition - 1)
+            )
+        }
+    }
 
     async function deletePainting(uuid: string) {
         try {
@@ -192,11 +202,78 @@
     }
 </script>
 
-<div class="flex min-h-screen flex-col items-center">
+<div
+    onpointermove={(e) => {
+        if (isDragging) {
+            cursorY = e.clientY
+            e.preventDefault()
+            let bottomestBottom = 0
+            for (let i = 0; i < paintingElements.length; i++) {
+                const element = paintingElements[i].getBoundingClientRect()
+                if (i == 0 && element.top > cursorY) {
+                    targetPosition = 1
+                    return
+                }
+                if (element.top < 0) {
+                    continue
+                }
+                bottomestBottom = element.bottom
+                if (
+                    i !== sourcePosition - 1 &&
+                    element.top < cursorY &&
+                    bottomestBottom > cursorY
+                ) {
+                    if (targetPosition == i + 1) {
+                        targetPosition++
+                        return
+                    } else {
+                        targetPosition = i + 1
+                        return
+                    }
+                }
+            }
+            if (cursorY > bottomestBottom) {
+                targetPosition = paintingElements.length + 1
+            }
+        }
+    }}
+    onpointerup={() => {
+        if (isDragging) {
+            movePainting()
+            isDragging = false
+            sourcePosition = 0
+            targetPosition = 0
+            shadowHeight = 0
+        }
+    }}
+    class="flex min-h-screen flex-col items-center"
+>
     <div class="flex w-225 flex-col">
         <h1>Admin Panel</h1>
-        {#each data.paintings as painting}
-            <div class="m-1.5 flex w-full items-center gap-4 border p-0.5">
+        {#each data.paintings as painting, i}
+            <div
+                hidden={painting.position !== targetPosition}
+                class="my-1.5 w-full items-center justify-center bg-amber-500 p-0.5"
+                style="height: {shadowHeight}px;"
+            ></div>
+            <div
+                bind:this={paintingElements[i]}
+                class="my-1.5 flex w-full items-center gap-4 border bg-white p-0.5"
+                style={sourcePosition == painting.position
+                    ? "top: " + (cursorY - shadowHeight / 2) + "px; position: fixed; width: 900px;"
+                    : ""}
+            >
+                <div
+                    class="h-40 w-20 bg-gray-300"
+                    onpointerdown={(e) => {
+                        e.preventDefault()
+                        isDragging = true
+                        sourcePosition = painting.position
+                        targetPosition = painting.position + 1
+                        shadowHeight = paintingElements[i].offsetHeight
+                        cursorY = e.clientY
+                    }}
+                ></div>
                 <img
                     src={"/images/" + painting.img_url}
                     alt={painting.name}
@@ -237,6 +314,11 @@
                 </div>
             </div>
         {/each}
+        <div
+            hidden={paintingElements.length + 1 !== targetPosition}
+            class="my-1.5 w-full items-center justify-center bg-amber-500 p-0.5"
+            style="height: {shadowHeight}px;"
+        ></div>
         <button
             onclick={() => (showModal = true)}
             class="mt-6 mb-10 w-40 cursor-pointer self-center rounded-xl bg-green-300 p-3"
