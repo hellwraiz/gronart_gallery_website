@@ -289,8 +289,8 @@
                       "px); position: fixed; top: 0; margin: 0; opacity: 0.85; width: 900px;"
                     : ""}
             >
-                <div
-                    class="h-40 w-20 bg-gray-300"
+                <svg
+                    class="h-40 w-20 text-gray-600 hover:text-gray-800"
                     onpointerdown={(e) => {
                         console.log("hello, I'm being weird" + painting.position)
                         e.preventDefault()
@@ -301,7 +301,15 @@
                         shadowHeightOffset = shadowHeight / 2
                         cursorY = e.clientY
                     }}
-                ></div>
+                    viewBox="0 0 16 16"
+                >
+                    <circle cx="6" cy="2" r="1.8" fill="currentColor" />
+                    <circle cx="14" cy="2" r="1.8" fill="currentColor" />
+                    <circle cx="6" cy="8" r="1.8" fill="currentColor" />
+                    <circle cx="14" cy="8" r="1.8" fill="currentColor" />
+                    <circle cx="6" cy="14" r="1.8" fill="currentColor" />
+                    <circle cx="14" cy="14" r="1.8" fill="currentColor" />
+                </svg>
                 <img
                     src={"/images/" + painting.img_url}
                     alt={painting.name}
@@ -313,7 +321,7 @@
                     <p>Size: {painting.size}</p>
                     <p>Price: {painting.sold ? "n/a" : painting.price}</p>
                     <p>Technique: {painting.technique}</p>
-                    <div class="flex gap-2">
+                    <div class="flex gap-1">
                         <p>Description:</p>
                         <p>{painting.description}</p>
                     </div>
