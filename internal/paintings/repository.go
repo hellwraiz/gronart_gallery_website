@@ -2,7 +2,6 @@ package paintings
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/jmoiron/sqlx"       // Makes sql queries take up less space
 	_ "github.com/mattn/go-sqlite3" // so that the database/sql package can use sqlite
@@ -137,8 +136,6 @@ func GetPaintingWithFilter(db *sqlx.DB, filters *Filter) (*[]Painting, error) {
 
 	query += ";"
 
-	log.Printf("Here's the final query: %s", query)
-
 	if err := db.Select(&paintings, query, args...); err != nil {
 		return nil, fmt.Errorf("Failed to get paintings with filters %v: %s", filters, err)
 	}
@@ -264,7 +261,6 @@ func ReorderPaintings(db *sqlx.DB, r *Reordering) error {
 	if err != nil {
 		return fmt.Errorf("Failed to start transaction: %s", err)
 	}
-	log.Println("started operation")
 	query := `
 	UPDATE paintings
 	SET position = 0
@@ -280,15 +276,12 @@ func ReorderPaintings(db *sqlx.DB, r *Reordering) error {
 		return err
 	}
 
-	log.Printf("Now doing thing %#v\n", r)
 	if r.Source > r.Destination {
-		log.Printf("moving stuff up")
 		query = `
 		UPDATE paintings
 		SET position = position + 1
 		WHERE position >= :destination and position < :source;`
 	} else {
-		log.Printf("moving stuff down")
 		query = `
 		UPDATE paintings
 		SET position = position - 1
@@ -304,7 +297,6 @@ func ReorderPaintings(db *sqlx.DB, r *Reordering) error {
 		return err
 	}
 
-	log.Println("terminating")
 	// Moving the source painting to target position
 	query = `
 	UPDATE paintings
@@ -322,6 +314,5 @@ func ReorderPaintings(db *sqlx.DB, r *Reordering) error {
 		return err
 	}
 	tx.Commit()
-	log.Println("done!")
 	return nil
 }

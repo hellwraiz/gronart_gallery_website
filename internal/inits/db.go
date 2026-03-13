@@ -2,7 +2,6 @@ package inits
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -19,7 +18,6 @@ func InitDB() (*sqlx.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Database connected successfully on path: %s", dbPath)
 
 	// Testing if the database was actually created.
 	if err := db.Ping(); err != nil {

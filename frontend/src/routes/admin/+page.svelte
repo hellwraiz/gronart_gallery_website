@@ -276,7 +276,7 @@
         {#each data.paintings as painting, i}
             <div
                 hidden={painting.position !== targetPosition}
-                class="my-1.5 w-full items-center justify-center bg-amber-500 p-0.5"
+                class="my-1.5 w-full items-center justify-center bg-gray-300 p-0.5"
                 style="height: {shadowHeight}px;"
             ></div>
             <!-- if hovering over this painting, move it up. So position must == target -->
