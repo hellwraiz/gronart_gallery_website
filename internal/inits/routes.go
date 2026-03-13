@@ -36,7 +36,7 @@ func InitRoutes(db *sqlx.DB) (*gin.Engine, error) {
 	// Here are all the static files though
 
 	//// Initiating the api routes
-	api := router.Group("/api")
+	api := router.Group("/api/")
 
 	paintings.InitRoutes(db, api)
 	media.InitRoutes(db, api)

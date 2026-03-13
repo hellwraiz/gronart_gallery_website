@@ -1,6 +1,7 @@
 package paintings
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"strconv"
@@ -12,6 +13,17 @@ import (
 // --------------------------- repository helpers --------------------------
 func generateUUID() string {
 	return uuid.New().String()
+}
+
+func rowsAffected(result sql.Result) error {
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("Unexpected error occured: %s", err)
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("Failed to update painting: painting not found")
+	}
+	return nil
 }
 
 // ---------------------------- handler helpers ----------------------------

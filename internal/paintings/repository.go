@@ -38,6 +38,7 @@ func GetPaintingByUUID(db *sqlx.DB, uuid string) (*Painting, error) {
 	return &p, nil
 }
 
+// TODO: Change so we don't need to use args array. Use named thing
 func GetPaintingWithFilter(db *sqlx.DB, filters *Filter) (*[]Painting, error) {
 
 	var paintings []Painting
@@ -114,11 +115,15 @@ func GetPaintingWithFilter(db *sqlx.DB, filters *Filter) (*[]Painting, error) {
 	}
 
 	if filters.OrderBy != "" {
-		allowedOrders := map[string]bool{"price": true, "name": true, "uploaded_at": true}
+		allowedOrders := map[string]bool{"price": true, "name": true, "uploaded_at": true, "position": true}
 		if allowedOrders[filters.OrderBy] {
 			query += " ORDER BY ?"
 			args = append(args, filters.OrderBy)
+		} else {
+			return nil, fmt.Errorf("Invalid order operation.")
 		}
+	} else {
+		query += " ORDER BY position"
 	}
 
 	if filters.Limit != -1 {
@@ -132,7 +137,7 @@ func GetPaintingWithFilter(db *sqlx.DB, filters *Filter) (*[]Painting, error) {
 
 	query += ";"
 
-	log.Println("here's the final query:", query)
+	log.Printf("Here's the final query: %s", query)
 
 	if err := db.Select(&paintings, query, args...); err != nil {
 		return nil, fmt.Errorf("Failed to get paintings with filters %v: %s", filters, err)
@@ -142,8 +147,6 @@ func GetPaintingWithFilter(db *sqlx.DB, filters *Filter) (*[]Painting, error) {
 
 func UpdatePainting(db *sqlx.DB, p *PatchPainting) (*Painting, error) {
 
-	var args []any
-
 	query := `
 	UPDATE paintings
 	SET 
@@ -151,63 +154,50 @@ func UpdatePainting(db *sqlx.DB, p *PatchPainting) (*Painting, error) {
 
 	if p.Name != nil {
 		query += "name = :name, "
-		args = append(args, *p.Name)
 	}
 
 	if p.Author != nil {
 		query += "author = :author, "
-		args = append(args, *p.Author)
 	}
 
 	if p.Size != nil {
 		query += "size = :size, "
-		args = append(args, *p.Size)
 	}
 
 	if p.Price != nil {
 		query += "price = :price, "
-		args = append(args, *p.Price)
 	}
 
 	if p.ImgURL != nil {
 		query += "img_url = :img_url, "
-		args = append(args, *p.ImgURL)
 	}
 
 	if p.Technique != nil {
 		query += "technique = :technique, "
-		args = append(args, *p.Technique)
 	}
 
 	if p.Description != nil {
 		query += "description = :description, "
-		args = append(args, *p.Description)
 	}
 
 	if p.Position != nil {
 		query += "position = :position, "
-		args = append(args, *p.Position)
 	}
 
 	if p.Sold != nil {
 		query += "sold = :sold, "
-		args = append(args, *p.Sold)
 	}
 
 	if p.Printable != nil {
 		query += "printable = :printable, "
-		args = append(args, *p.Printable)
 	}
 
 	if p.Copiable != nil {
 		query += "copiable = :copiable, "
-		args = append(args, *p.Copiable)
 	}
 
 	query += `last_edited_at = datetime('now', 'utc')
 	WHERE uuid = :uuid;`
-
-	log.Println("here's the final query:", query)
 
 	result, err := db.NamedExec(query, p)
 	if err != nil {
@@ -229,23 +219,109 @@ func UpdatePainting(db *sqlx.DB, p *PatchPainting) (*Painting, error) {
 	return newPainting, nil
 }
 
-func DeletePainting(db *sqlx.DB, uuid string) error {
+func DeletePainting(db *sqlx.DB, position int, uuid string) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("Failed to start transaction: %s", err)
+	}
+
 	query := `
-	DELETE FROM paintings
-	WHERE uuid = ? 
+	UPDATE paintings
+	SET position = position - 1
+	WHERE position > ?;
 	`
 
-	result, err := db.Exec(query, uuid)
+	result, err := tx.Exec(query, position)
 	if err != nil {
+		tx.Rollback()
 		return fmt.Errorf("Failed to delete painting: %s", err)
 	}
-	rowsAffected, err := result.RowsAffected()
+	// not checking for rows affected in case it was the last row
+
+	query = `
+	DELETE FROM paintings
+	WHERE uuid = ?;
+	`
+
+	result, err = tx.Exec(query, uuid)
 	if err != nil {
-		return fmt.Errorf("Unexpected error occured: %s", err)
+		tx.Rollback()
+		return fmt.Errorf("Failed to delete painting: %s", err)
 	}
-	if rowsAffected == 0 {
-		return fmt.Errorf("Failed to update painting: painting not found")
+	if err := rowsAffected(result); err != nil {
+		tx.Rollback()
+		return err
+	}
+	tx.Commit()
+
+	return nil
+}
+
+func ReorderPaintings(db *sqlx.DB, r *Reordering) error {
+
+	// Putting the painting at index 0
+	tx, err := db.Beginx()
+	if err != nil {
+		return fmt.Errorf("Failed to start transaction: %s", err)
+	}
+	log.Println("started operation")
+	query := `
+	UPDATE paintings
+	SET position = 0
+	WHERE position = :source;`
+
+	result, err := tx.NamedExec(query, r)
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("Failed to reorder paintings: %s", err)
+	}
+	if err := rowsAffected(result); err != nil {
+		tx.Rollback()
+		return err
 	}
 
+	log.Printf("Now doing thing %#v\n", r)
+	if r.Source > r.Destination {
+		log.Printf("moving stuff up")
+		query = `
+		UPDATE paintings
+		SET position = position + 1
+		WHERE position >= :destination and position < :source;`
+	} else {
+		log.Printf("moving stuff down")
+		query = `
+		UPDATE paintings
+		SET position = position - 1
+		WHERE position > :source and position <= :destination;`
+	}
+	result, err = tx.NamedExec(query, r)
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("Failed to reorder paintings: %s", err)
+	}
+	if err := rowsAffected(result); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	log.Println("terminating")
+	// Moving the source painting to target position
+	query = `
+	UPDATE paintings
+	SET position = :destination
+	WHERE position = 0;
+	`
+
+	result, err = tx.NamedExec(query, r)
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("Failed to reorder paintings: %s", err)
+	}
+	if err := rowsAffected(result); err != nil {
+		tx.Rollback()
+		return err
+	}
+	tx.Commit()
+	log.Println("done!")
 	return nil
 }

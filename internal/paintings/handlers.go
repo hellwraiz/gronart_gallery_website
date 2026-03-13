@@ -79,7 +79,7 @@ func (h *DBHandler) deleteOne(c *gin.Context) {
 
 	imgUrl := painting.ImgURL
 
-	if err = DeletePainting(db, uuid); isError(err, "DB error", http.StatusInternalServerError, c) {
+	if err = DeletePainting(db, painting.Position, uuid); isError(err, "DB error", http.StatusInternalServerError, c) {
 		return
 	}
 
@@ -98,7 +98,6 @@ func (h *DBHandler) patch(c *gin.Context) {
 	if err := c.ShouldBindJSON(&painting); isError(err, "JSON error", http.StatusBadRequest, c) {
 		return
 	}
-	log.Printf("This is mostly for testing %v", painting)
 	painting.UUID = uuid
 	newPainting, err := UpdatePainting(db, &painting)
 	if isError(err, "DB error", http.StatusInternalServerError, c) {
@@ -107,14 +106,35 @@ func (h *DBHandler) patch(c *gin.Context) {
 	c.JSON(http.StatusOK, newPainting)
 }
 
+func (h *DBHandler) reorder(c *gin.Context) {
+	log.Println()
+	log.Println("hello this is being called haha")
+	db := h.db
+
+	var reordering Reordering
+	if err := c.ShouldBindJSON(&reordering); isError(err, "JSON error", http.StatusBadRequest, c) {
+		return
+	}
+	log.Printf("Whatever this does %#v\n", reordering)
+	if reordering.Source == reordering.Destination || reordering.Source < 1 || reordering.Destination < 1 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Source and destination have to be positive integers and non-equal."})
+		return
+	}
+	if err := ReorderPaintings(db, &reordering); isError(err, "DB error", http.StatusInternalServerError, c) {
+		return
+	}
+	c.Status(http.StatusOK)
+}
+
 func InitRoutes(db *sqlx.DB, api *gin.RouterGroup) {
-	paintings := api.Group("/paintings")
+	paintings := api.Group("paintings/")
 
 	h := DBHandler{db: db}
 
 	paintings.GET("", h.getFiltered)
 	paintings.POST("", auth.AuthMiddleware(), h.create)
-	paintings.DELETE("/:uuid", auth.AuthMiddleware(), h.deleteOne)
-	paintings.PATCH("/:uuid", auth.AuthMiddleware(), h.patch)
+	paintings.DELETE(":uuid", auth.AuthMiddleware(), h.deleteOne)
+	paintings.PATCH("move/", auth.AuthMiddleware(), h.reorder)
+	paintings.PATCH(":uuid", auth.AuthMiddleware(), h.patch)
 
 }

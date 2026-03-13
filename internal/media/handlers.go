@@ -114,18 +114,18 @@ func (h *DBHandler) updateC(c *gin.Context) {
 }
 
 func InitRoutes(db *sqlx.DB, api *gin.RouterGroup) {
-	media := api.Group("/upload")
+	media := api.Group("upload/")
 
 	h := DBHandler{db: db}
 
 	// paniting image crud
-	media.POST("/", auth.AuthMiddleware(), create)
-	media.DELETE("/:img_url", auth.AuthMiddleware(), deleteOne)
-	media.PUT("/:img_url", auth.AuthMiddleware(), update)
+	media.POST("", auth.AuthMiddleware(), create)
+	media.DELETE(":img_url", auth.AuthMiddleware(), deleteOne)
+	media.PUT(":img_url", auth.AuthMiddleware(), update)
 
 	// cover image crud
-	media.POST("/cover", auth.AuthMiddleware(), h.uploadC)
-	media.DELETE("/cover", h.deleteC)
-	media.PUT("/cover", auth.AuthMiddleware(), h.updateC)
+	media.POST("cover/", auth.AuthMiddleware(), h.uploadC)
+	media.DELETE("cover/", h.deleteC)
+	media.PUT("cover/", auth.AuthMiddleware(), h.updateC)
 
 }

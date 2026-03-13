@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"log"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -12,7 +11,6 @@ func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		email := c.GetHeader("email")
 		pass := c.GetHeader("pass")
-		log.Printf("Here's what I got: %s %s\n", email, pass)
 		if email == "" || pass == "" {
 			c.JSON(401, gin.H{"error": "No token"})
 			c.Abort()

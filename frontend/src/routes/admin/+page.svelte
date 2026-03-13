@@ -1,4 +1,5 @@
 <script lang="ts">
+    // TODO: get rid of all invalidateAll thingies
     /* ===================================
                Everything init
     ====================================*/
@@ -31,6 +32,7 @@
     let targetPosition = $state(0)
     let isDragging = $state(false)
     let shadowHeight = $state(0)
+    let shadowHeightOffset = $state(0)
 
     /* ===================================
                Helper functions
@@ -90,22 +92,34 @@
     ====================================*/
 
     async function movePainting() {
-        if (sourcePosition === targetPosition - 1) {
-            console.log("painting not moved. Skipping")
+        if (sourcePosition === targetPosition) {
             return
         }
-        if (sourcePosition > targetPosition) {
-            console.log("Moving painting " + sourcePosition + " to position " + targetPosition)
-        } else {
-            console.log(
-                "Moving painting " + sourcePosition + " to position " + (targetPosition - 1)
+        if (sourcePosition < targetPosition) {
+            targetPosition--
+        }
+
+        try {
+            await axios.patch(
+                `/api/paintings/move/`,
+                { source: sourcePosition, destination: targetPosition },
+                {
+                    headers: {
+                        email: localStorage.getItem("email"),
+                        pass: localStorage.getItem("pass")
+                    }
+                }
             )
+            await invalidateAll()
+        } catch (error) {
+            alert("Couldn't move painting, something went wrong.")
+            console.log(error)
         }
     }
 
     async function deletePainting(uuid: string) {
         try {
-            await axios.delete(`api/paintings/${uuid}`, {
+            await axios.delete(`/api/paintings/${uuid}`, {
                 headers: {
                     email: localStorage.getItem("email"),
                     pass: localStorage.getItem("pass")
@@ -141,7 +155,7 @@
                         alert("successfully changed cover image")
                         return
                     }
-                    let res = await axios.post("api/upload/", photoData, {
+                    let res = await axios.post("/api/upload/", photoData, {
                         headers: {
                             "Content-Type": "multipart/form-data",
                             email: localStorage.getItem("email"),
@@ -165,7 +179,7 @@
         try {
             if (editing) {
                 await axios.patch(
-                    `api/paintings/${updated.uuid}`,
+                    `/api/paintings/${updated.uuid}`,
                     { ...form },
                     {
                         headers: {
@@ -176,7 +190,7 @@
                 )
             } else {
                 await axios.post(
-                    "api/paintings",
+                    "/api/paintings/",
                     { ...form },
                     {
                         headers: {
@@ -195,7 +209,6 @@
         // cleanup
         // TODO: could make this more efficient
         await invalidateAll()
-        alert("Uploaded the painting successfully!")
         form = resetForm()
         showModal = false
         editing = false
@@ -205,34 +218,43 @@
 <div
     onpointermove={(e) => {
         if (isDragging) {
-            cursorY = e.clientY
             e.preventDefault()
-            let bottomestBottom = 0
+            cursorY = e.clientY
             for (let i = 0; i < paintingElements.length; i++) {
-                const element = paintingElements[i].getBoundingClientRect()
-                if (i == 0 && element.top > cursorY) {
-                    targetPosition = 1
-                    return
-                }
-                if (element.top < 0) {
+                // don't forget that positions are 1 indexed!!!
+                if (i == sourcePosition - 1) {
+                    // don't do this on painting you're dragging
                     continue
                 }
-                bottomestBottom = element.bottom
-                if (
-                    i !== sourcePosition - 1 &&
-                    element.top < cursorY &&
-                    bottomestBottom > cursorY
-                ) {
-                    if (targetPosition == i + 1) {
-                        targetPosition++
-                        return
+                const element = paintingElements[i].getBoundingClientRect()
+                if (element.top < -100) {
+                    // skip paintings that are outside the view
+                    continue
+                }
+                if (i == 0 && element.top > cursorY) {
+                    // if cursor is higher than paintings, put target on top
+                    console.log("just in case")
+                    targetPosition = 1
+                    break
+                }
+                if (element.top < cursorY && element.bottom > cursorY) {
+                    const middle = element.top + (element.bottom - element.top) / 2
+                    console.log("position is: " + i)
+                    if (cursorY < middle) {
+                        console.log("up")
+                        if (targetPosition !== i) {
+                            targetPosition = i + 1
+                        }
                     } else {
-                        targetPosition = i + 1
-                        return
+                        console.log("up")
+                        targetPosition = i + 2
                     }
                 }
             }
-            if (cursorY > bottomestBottom) {
+            if (
+                cursorY >
+                paintingElements[paintingElements.length - 1].getBoundingClientRect().bottom
+            ) {
                 targetPosition = paintingElements.length + 1
             }
         }
@@ -243,6 +265,7 @@
             isDragging = false
             sourcePosition = 0
             targetPosition = 0
+            shadowHeightOffset = 0
             shadowHeight = 0
         }
     }}
@@ -256,21 +279,26 @@
                 class="my-1.5 w-full items-center justify-center bg-amber-500 p-0.5"
                 style="height: {shadowHeight}px;"
             ></div>
+            <!-- if hovering over this painting, move it up. So position must == target -->
             <div
                 bind:this={paintingElements[i]}
                 class="my-1.5 flex w-full items-center gap-4 border bg-white p-0.5"
                 style={sourcePosition == painting.position
-                    ? "top: " + (cursorY - shadowHeight / 2) + "px; position: fixed; width: 900px;"
+                    ? "transform: translateY(" +
+                      (cursorY - shadowHeightOffset) +
+                      "px); position: fixed; top: 0; margin: 0; opacity: 0.85; width: 900px;"
                     : ""}
             >
                 <div
                     class="h-40 w-20 bg-gray-300"
                     onpointerdown={(e) => {
+                        console.log("hello, I'm being weird" + painting.position)
                         e.preventDefault()
                         isDragging = true
                         sourcePosition = painting.position
-                        targetPosition = painting.position + 1
+                        targetPosition = painting.position
                         shadowHeight = paintingElements[i].offsetHeight
+                        shadowHeightOffset = shadowHeight / 2
                         cursorY = e.clientY
                     }}
                 ></div>

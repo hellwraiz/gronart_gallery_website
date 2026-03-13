@@ -22,7 +22,7 @@ func login(c *gin.Context) {
 }
 
 func InitRoutes(api *gin.RouterGroup) {
-	auth := api.Group("/login")
+	auth := api.Group("login/")
 
 	auth.POST("", login)
 

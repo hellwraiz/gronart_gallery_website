@@ -47,3 +47,8 @@ type PatchPainting struct {
 	Printable   *bool   `db:"printable" json:"printable"`
 	Copiable    *bool   `db:"copiable" json:"copiable"`
 }
+
+type Reordering struct {
+	Source      int `db:"source" json:"source"`
+	Destination int `db:"destination" json:"destination"`
+}
