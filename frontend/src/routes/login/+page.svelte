@@ -41,6 +41,6 @@
                 class="border px-2 py-1"
             />
         </div>
-        <button on:click={login} class="w-full bg-blue-500 py-2 text-white">Login</button>
+        <button onclick={login} class="w-full bg-blue-500 py-2 text-white">Login</button>
     </div>
 </div>

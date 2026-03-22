@@ -24,7 +24,8 @@
         description: "",
         sold: false,
         printable: false,
-        copiable: false
+        copiable: false,
+        favorite: true
     })
 
     // All the dragging stuff
@@ -50,6 +51,7 @@
             sold: painting.sold,
             printable: painting.printable,
             copiable: painting.copiable,
+            favorite: painting.favorite,
             image: undefined
         }
     }
@@ -66,7 +68,8 @@
             description: "",
             sold: false,
             printable: false,
-            copiable: false
+            copiable: false,
+            favorite: true
         }
     }
 
@@ -136,7 +139,6 @@
         // Uploading the image
         const photoData = new FormData()
 
-        console.log(photoData)
         if (form.image && form.image.length > 0) {
             photoData.append("image", form.image[0])
             try {
@@ -233,20 +235,16 @@
                 }
                 if (i == 0 && element.top > cursorY) {
                     // if cursor is higher than paintings, put target on top
-                    console.log("just in case")
                     targetPosition = 1
                     break
                 }
                 if (element.top < cursorY && element.bottom > cursorY) {
                     const middle = element.top + (element.bottom - element.top) / 2
-                    console.log("position is: " + i)
                     if (cursorY < middle) {
-                        console.log("up")
                         if (targetPosition !== i) {
                             targetPosition = i + 1
                         }
                     } else {
-                        console.log("up")
                         targetPosition = i + 2
                     }
                 }
@@ -292,7 +290,7 @@
                 <svg
                     class="h-40 w-20 text-gray-600 hover:text-gray-800"
                     onpointerdown={(e) => {
-                        console.log("hello, I'm being weird" + painting.position)
+                        if (e.button !== 0) return
                         e.preventDefault()
                         isDragging = true
                         sourcePosition = painting.position
@@ -326,14 +324,20 @@
                         <p>{painting.description}</p>
                     </div>
                     <div class="flex flex-col">
+                        <p>This Painting:</p>
                         {#if painting.sold}
-                            <p style="color: green;">This painting was sold!</p>
+                            <p style="color: green;">was sold!</p>
                         {/if}
                         {#if painting.copiable}
-                            <p style="color: green;">This painting can be copied!</p>
+                            <p style="color: green;">can be copied!</p>
                         {/if}
                         {#if painting.printable}
-                            <p style="color: green;">This painting can be printed!</p>
+                            <p style="color: green;">can be printed!</p>
+                        {/if}
+                        {#if painting.favorite}
+                            <p style="color: green;">is in your favorites</p>
+                        {:else}
+                            <p style="color: red;">is not in your favorites</p>
                         {/if}
                     </div>
                 </div>
@@ -447,6 +451,16 @@
                     type="checkbox"
                     name="printable"
                     id="printable"
+                />
+            </div>
+            <div class="flex">
+                <label for="favorite">Shown in favorites: </label>
+                <input
+                    bind:checked={form["favorite"]}
+                    class="m-1"
+                    type="checkbox"
+                    name="favorite"
+                    id="favorite"
                 />
             </div>
         </div>

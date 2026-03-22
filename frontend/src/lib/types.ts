@@ -11,6 +11,7 @@ export type Painting = {
     sold: boolean
     printable: boolean
     copiable: boolean
+    favorite: boolean
     uploaded_at: string
     last_edited_at: string
 }

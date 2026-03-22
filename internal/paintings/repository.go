@@ -9,7 +9,7 @@ import (
 
 func CreatePainting(db *sqlx.DB, p *Painting) error {
 
-	query := `INSERT INTO paintings (uuid, name, author, size, price, img_url, technique, description, sold, printable, copiable) VALUES (:uuid, :name, :author, :size, :price, :img_url, :technique, :description, :sold, :printable, :copiable)`
+	query := `INSERT INTO paintings (uuid, name, author, size, price, img_url, technique, description, sold, printable, copiable, favorite) VALUES (:uuid, :name, :author, :size, :price, :img_url, :technique, :description, :sold, :printable, :copiable, :favorite)`
 
 	p.UUID = generateUUID()
 
@@ -113,6 +113,11 @@ func GetPaintingWithFilter(db *sqlx.DB, filters *Filter) (*[]Painting, error) {
 		args = append(args, filters.Copiable)
 	}
 
+	if filters.Favorite != false {
+		query += " AND favorite = ?"
+		args = append(args, filters.Favorite)
+	}
+
 	if filters.OrderBy != "" {
 		allowedOrders := map[string]bool{"price": true, "name": true, "uploaded_at": true, "position": true}
 		if allowedOrders[filters.OrderBy] {
@@ -191,6 +196,10 @@ func UpdatePainting(db *sqlx.DB, p *PatchPainting) (*Painting, error) {
 
 	if p.Copiable != nil {
 		query += "copiable = :copiable, "
+	}
+
+	if p.Copiable != nil {
+		query += "favorite = :favorite, "
 	}
 
 	query += `last_edited_at = datetime('now', 'utc')

@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"log"
 	"net/http"
 	"os"
 
@@ -13,7 +12,6 @@ func login(c *gin.Context) {
 	c.BindJSON(&login)
 
 	// Check if password is valid
-	log.Printf("here's what I use %s %s", os.Getenv("TEMP_EMAIL"), os.Getenv("TEMP_PASSWD"))
 	if os.Getenv("TEMP_EMAIL") == login.Email && os.Getenv("TEMP_PASSWD") == login.Password {
 		c.Status(http.StatusOK)
 	} else {

@@ -21,7 +21,6 @@ func (h *DBHandler) create(c *gin.Context) {
 	if err := c.BindJSON(&painting); isError(err, "JSON error", http.StatusBadRequest, c) {
 		return
 	}
-	log.Printf("Here's what I got %+v", painting)
 	if err := CreatePainting(db, &painting); isError(err, "DB error", http.StatusInternalServerError, c) {
 		return
 	}
@@ -31,19 +30,17 @@ func (h *DBHandler) create(c *gin.Context) {
 func (h *DBHandler) getFiltered(c *gin.Context) {
 	db := h.db
 	// Getting the parameters
-	authors, sizes, priceRangeStr, techniques, soldStr, printableStr, copiableStr, orderBy, limitStr, offsetStr :=
+	authors, sizes, priceRangeStr, techniques, soldStr, printableStr, copiableStr, favoriteStr, orderBy, limitStr, offsetStr :=
 		c.QueryArray("authors"), c.QueryArray("sizes"), c.QueryArray("price_range"),
 		c.QueryArray("techniques"), c.Query("sold"), c.Query("printable"),
-		c.Query("copiable"), c.Query("order_by"), c.Query("limit"), c.Query("offset")
+		c.Query("copiable"), c.Query("favorite"), c.Query("order_by"), c.Query("limit"), c.Query("offset")
 
 	// Doing data processing/validation
 	// TODO: improve data validation
 	var priceRange [2]int
-	log.Printf("Here's the price range %v", priceRangeStr)
 	if len(priceRangeStr) == 2 {
 		priceRange = [2]int{StoI(priceRangeStr[0], -1), StoI(priceRangeStr[1], -1)}
 	} else {
-		log.Printf("Couldn't parse this price range: %v", priceRangeStr)
 		priceRange = [2]int{-1, -1}
 	}
 
@@ -51,13 +48,14 @@ func (h *DBHandler) getFiltered(c *gin.Context) {
 	sold := StoB(soldStr, false)
 	printable := StoB(printableStr, false)
 	copiable := StoB(copiableStr, false)
+	favorite := StoB(favoriteStr, false)
 	limit := StoI(limitStr, -1)
 	offset := StoI(offsetStr, -1)
 
 	// Populate the filter thing
 	filters := &Filter{Authors: authors, Sizes: sizes, PriceRange: priceRange,
 		Techniques: techniques, Sold: sold, Printable: printable, Copiable: copiable,
-		OrderBy: orderBy, Limit: limit, Offset: offset}
+		Favorite: favorite, OrderBy: orderBy, Limit: limit, Offset: offset}
 
 	// Get the actual paintings!
 	paintings, err := GetPaintingWithFilter(db, filters)
@@ -107,15 +105,12 @@ func (h *DBHandler) patch(c *gin.Context) {
 }
 
 func (h *DBHandler) reorder(c *gin.Context) {
-	log.Println()
-	log.Println("hello this is being called haha")
 	db := h.db
 
 	var reordering Reordering
 	if err := c.ShouldBindJSON(&reordering); isError(err, "JSON error", http.StatusBadRequest, c) {
 		return
 	}
-	log.Printf("Whatever this does %#v\n", reordering)
 	if reordering.Source == reordering.Destination || reordering.Source < 1 || reordering.Destination < 1 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Source and destination have to be positive integers and non-equal."})
 		return

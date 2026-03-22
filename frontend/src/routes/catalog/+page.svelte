@@ -44,11 +44,27 @@
         }
     }
 
-    onMount(() => {
+    /* onMount(() => {
         updateVisibleCount()
         window.addEventListener("resize", updateVisibleCount)
         return () => window.removeEventListener("resize", updateVisibleCount)
     })
+
+    function resizePaintings() {
+        const rowHeight = 10 // must match grid-auto-rows
+        const gap = 12
+
+        document.querySelectorAll(".painting").forEach((item) => {
+            const img = item.querySelector("img")
+            const contentHeight = img.getBoundingClientRect().height
+            const spans = Math.ceil((contentHeight + gap) / (rowHeight + gap))
+            item.style.gridRow = `span ${spans}`
+        })
+    }
+
+    // Run after images load
+    window.addEventListener("load", resizePaintings)
+    window.addEventListener("resize", resizePaintings) */
 </script>
 
 {#if currentPainting != null}
@@ -92,19 +108,6 @@
     </div>
 {/if}
 
-<div class="relative flex h-screen w-full items-center justify-center">
-    <img
-        src="/images/cover.jpg"
-        alt="cover"
-        class="mg-auto absolute inset-0 h-screen w-full object-cover object-center"
-    />
-    <p
-        class="mg-auto z-10 text-5xl font-bold text-amber-300 drop-shadow-[0px_0px_2px_rgba(0,0,0,0.45)] [-webkit-text-stroke:0.3px_gray] lg:text-9xl lg:[-webkit-text-stroke:0px]"
-    >
-        GRONA gallery
-    </p>
-</div>
-
 <div bind:this={paintingSection} class="w-full px-surround-phone lg:px-surround">
     <div class="mx-auto flex max-w-content-phone justify-center lg:max-w-content">
         <p class="py-5 text-xl font-bold lg:text-4xl">Here are our gallery's paintings!</p>
@@ -113,38 +116,36 @@
         class="mx-auto grid max-w-content-phone grid-cols-1 gap-2.5 pt-6 lg:max-w-content lg:grid-cols-4"
     >
         {#each paintings as painting}
-            {#if painting.favorite}
-                <div class="flex flex-col justify-between">
-                    <button
-                        onclick={() => {
-                            currentPainting = painting
-                        }}
-                        class="flex justify-center"
-                    >
-                        <img
-                            src={getThumbnailUrl(painting.img_url)}
-                            class="aspect-square max-h-120 max-w-80 cursor-pointer self-center object-contain object-center transition-opacity hover:brightness-90 lg:aspect-auto lg:max-h-full lg:max-w-full"
-                            alt={"Painting: " + painting.name}
-                        />
-                    </button>
-                    <div class="flex flex-col p-3 pt-1">
-                        <h1 class="pb-2">{painting.name}, {painting.size}</h1>
-                        <h2>{painting.technique}</h2>
-                        <h2>{painting.author}</h2>
-                        {#if painting.sold}
-                            <h3>Price: Sold!</h3>
-                        {:else}
-                            <h3>Price: {painting.price} €</h3>
-                        {/if}
-                        {#if painting.printable}
-                            <h3>Prints available!</h3>
-                        {/if}
-                        {#if painting.copiable}
-                            <h3>Copies available!</h3>
-                        {/if}
-                    </div>
+            <div class="painting flex flex-col justify-between">
+                <button
+                    onclick={() => {
+                        currentPainting = painting
+                    }}
+                    class="flex justify-center"
+                >
+                    <img
+                        src={getThumbnailUrl(painting.img_url)}
+                        class="aspect-square max-h-120 max-w-80 cursor-pointer self-center object-contain object-center transition-opacity hover:brightness-90 lg:aspect-auto lg:max-h-full lg:max-w-full"
+                        alt={"Painting: " + painting.name}
+                    />
+                </button>
+                <div class="flex flex-col p-3 pt-1">
+                    <h1 class="pb-2">{painting.name}, {painting.size}</h1>
+                    <h2>{painting.technique}</h2>
+                    <h2>{painting.author}</h2>
+                    {#if painting.sold}
+                        <h3>Price: Sold!</h3>
+                    {:else}
+                        <h3>Price: {painting.price} €</h3>
+                    {/if}
+                    {#if painting.printable}
+                        <h3>Prints available!</h3>
+                    {/if}
+                    {#if painting.copiable}
+                        <h3>Copies available!</h3>
+                    {/if}
                 </div>
-            {/if}
+            </div>
         {/each}
     </div>
     {#if totalPages > 1}
@@ -215,5 +216,27 @@
     button.active {
         background: gray;
         color: white;
+    }
+
+    .gallery {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-auto-rows: 10px;
+        gap: 12px;
+    }
+
+    .painting {
+        /* set by JS */
+    }
+
+    .painting img {
+        width: 100%;
+        display: block;
+    }
+
+    @media (width >= 64rem /* 1024px */) {
+        .gallery {
+            column-count: 1;
+        }
     }
 </style>

@@ -10,6 +10,7 @@ type Filter struct {
 	Sold       bool
 	Printable  bool
 	Copiable   bool
+	Favorite   bool
 	OrderBy    string
 	Limit      int
 	Offset     int
@@ -29,6 +30,7 @@ type Painting struct {
 	Sold         bool      `db:"sold" json:"sold"`
 	Printable    bool      `db:"printable" json:"printable"`
 	Copiable     bool      `db:"copiable" json:"copiable"`
+	Favorite     bool      `db:"favorite" json:"favorite"`
 	UploadedAt   time.Time `db:"uploaded_at" json:"uploaded_at"`
 	LastEditedAt time.Time `db:"last_edited_at" json:"last_edited_at"`
 }
@@ -46,6 +48,7 @@ type PatchPainting struct {
 	Sold        *bool   `db:"sold" json:"sold"`
 	Printable   *bool   `db:"printable" json:"printable"`
 	Copiable    *bool   `db:"copiable" json:"copiable"`
+	Favorite    *bool   `db:"favorite" json:"favorite"`
 }
 
 type Reordering struct {

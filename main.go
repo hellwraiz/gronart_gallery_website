@@ -7,8 +7,6 @@ import (
 	_ "log"
 	"os"
 
-	_ "golang.org/x/image/webp"
-
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	_ "github.com/joho/godotenv"    // gives me access to the .env file values in the app

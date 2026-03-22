@@ -17,8 +17,7 @@
             <img src="/favicon.png" class="w-28" alt="LOGO" />
         </a>
         <a href="/">Home</a>
-        <a href="/">Catalog</a>
-        <!-- <a href="/paintings">Catalog</a> -->
+        <a href="/catalog">Catalog</a>
         <!-- <a href="/paintors">Paintors</a> -->
         <!-- <a href="/projects">Projects</a> -->
         <a href="/contact">Contact</a>
@@ -36,7 +35,6 @@
         >
             <svg
                 class="h-12 w-12 text-gray-800 backdrop-blur-2xl"
-                fill="none"
                 stroke="currentColor"
                 stroke-width="2"
                 viewBox="0 0 24 24"
@@ -66,7 +64,7 @@
 
             <nav class="mt-8 flex flex-col gap-4">
                 <a onclick={() => (open = false)} href="/">Home</a>
-                <a onclick={() => (open = false)} href="/">Catalog</a>
+                <a onclick={() => (open = false)} href="/catalog">Catalog</a>
                 <a onclick={() => (open = false)} href="/contact">Contact</a>
             </nav>
         </div>
