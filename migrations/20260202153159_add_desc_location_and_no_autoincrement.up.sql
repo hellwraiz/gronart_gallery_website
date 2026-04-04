@@ -26,7 +26,7 @@ DROP TABLE paintings;
 ALTER TABLE new_paintings RENAME TO paintings;
 
 
-CREATE TRIGGER paintings_set_position
+CREATE TRIGGER IF NOT EXISTS paintings_set_position
 AFTER INSERT ON paintings
 FOR EACH ROW
 WHEN NEW.position IS NULL

@@ -25,3 +25,17 @@ SET position = rowid;
 
 DROP TABLE paintings;
 ALTER TABLE new_paintings RENAME TO paintings;
+
+CREATE TRIGGER IF NOT EXISTS paintings_set_position
+AFTER INSERT ON paintings
+FOR EACH ROW
+WHEN NEW.position IS NULL
+BEGIN
+  UPDATE paintings
+  SET position = (
+    SELECT COALESCE(MAX(position), 0)
+    FROM paintings
+    WHERE rowid != NEW.rowid
+  ) + 1
+  WHERE rowid = NEW.rowid;
+END;

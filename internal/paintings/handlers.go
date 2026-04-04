@@ -18,7 +18,7 @@ type DBHandler struct {
 func (h *DBHandler) create(c *gin.Context) {
 	var painting Painting
 	db := h.db
-	if err := c.BindJSON(&painting); isError(err, "JSON error", http.StatusBadRequest, c) {
+	if err := c.ShouldBindJSON(&painting); isError(err, "JSON error", http.StatusBadRequest, c) {
 		return
 	}
 	if err := CreatePainting(db, &painting); isError(err, "DB error", http.StatusInternalServerError, c) {
@@ -127,9 +127,9 @@ func InitRoutes(db *sqlx.DB, api *gin.RouterGroup) {
 	h := DBHandler{db: db}
 
 	paintings.GET("", h.getFiltered)
-	paintings.POST("", auth.AuthMiddleware(), h.create)
-	paintings.DELETE(":uuid", auth.AuthMiddleware(), h.deleteOne)
-	paintings.PATCH("move/", auth.AuthMiddleware(), h.reorder)
-	paintings.PATCH(":uuid", auth.AuthMiddleware(), h.patch)
+	paintings.POST("", auth.AdminAuthMiddleware(), h.create)
+	paintings.DELETE(":uuid", auth.AdminAuthMiddleware(), h.deleteOne)
+	paintings.PATCH("move/", auth.AdminAuthMiddleware(), h.reorder)
+	paintings.PATCH(":uuid", auth.AdminAuthMiddleware(), h.patch)
 
 }

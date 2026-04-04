@@ -7,7 +7,7 @@ import (
 )
 
 // Middleware to check token
-func AuthMiddleware() gin.HandlerFunc {
+func AdminAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		email := c.GetHeader("email")
 		pass := c.GetHeader("pass")

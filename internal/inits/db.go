@@ -24,6 +24,7 @@ func InitDB() (*sqlx.DB, error) {
 		db.Close()
 		return nil, fmt.Errorf("Failed to connect to the database: %s", err)
 	}
+	db.Exec("PRAGMA foreign_keys = ON") // apparently SQLite disables this automatically on each connection
 
 	// Running migrations
 	if err := runMigrations(db); err != nil {

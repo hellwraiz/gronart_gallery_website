@@ -119,13 +119,13 @@ func InitRoutes(db *sqlx.DB, api *gin.RouterGroup) {
 	h := DBHandler{db: db}
 
 	// paniting image crud
-	media.POST("", auth.AuthMiddleware(), create)
-	media.DELETE(":img_url", auth.AuthMiddleware(), deleteOne)
-	media.PUT(":img_url", auth.AuthMiddleware(), update)
+	media.POST("", auth.AdminAuthMiddleware(), create)
+	media.DELETE(":img_url", auth.AdminAuthMiddleware(), deleteOne)
+	media.PUT(":img_url", auth.AdminAuthMiddleware(), update)
 
 	// cover image crud
-	media.POST("cover/", auth.AuthMiddleware(), h.uploadC)
+	media.POST("cover/", auth.AdminAuthMiddleware(), h.uploadC)
 	media.DELETE("cover/", h.deleteC)
-	media.PUT("cover/", auth.AuthMiddleware(), h.updateC)
+	media.PUT("cover/", auth.AdminAuthMiddleware(), h.updateC)
 
 }
