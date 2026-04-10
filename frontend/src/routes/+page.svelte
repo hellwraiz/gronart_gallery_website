@@ -3,7 +3,6 @@
     import { onMount, tick } from "svelte"
     let { data } = $props()
     let currentPainting: Painting | null = $state(null)
-    // HACK: Please return to normal value before letting it go to prod
     let currentPage = $state(1)
     let perPage = $state(0)
     updateVisibleCount()

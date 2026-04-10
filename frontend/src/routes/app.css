@@ -7,4 +7,6 @@
     --spacing-surround-phone: 32px;
 }
 
-
+body {
+  font-family: 'Rosario', serif;
+}

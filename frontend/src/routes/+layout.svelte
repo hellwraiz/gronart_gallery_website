@@ -17,7 +17,7 @@
             <img src="/favicon.png" class="w-28" alt="LOGO" />
         </a>
         <a href="/">Home</a>
-        <a href="/catalog">Catalog</a>
+        <a href="/catalogue">Catalogue</a>
         <!-- <a href="/paintors">Paintors</a> -->
         <!-- <a href="/projects">Projects</a> -->
         <a href="/contact">Contact</a>
@@ -64,7 +64,7 @@
 
             <nav class="mt-8 flex flex-col gap-4">
                 <a onclick={() => (open = false)} href="/">Home</a>
-                <a onclick={() => (open = false)} href="/catalog">Catalog</a>
+                <a onclick={() => (open = false)} href="/catalogue">Catalogue</a>
                 <a onclick={() => (open = false)} href="/contact">Contact</a>
             </nav>
         </div>
